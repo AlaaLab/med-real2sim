@@ -40,16 +40,8 @@ def simulator(N, Tc, Rs, Rm, Ra, Rc, Ca, Cs, Cr, Ls, Emax, Emin, Vd, start_v, st
     sol = odeint(heart_ode, y0, t, args = (Rs, Rm, Ra, Rc, Ca, Cs, Cr, Ls, Emax, Emin, Tc)) #t: list of values
     
     result_Vlv = np.array(sol[:, 0]) + Vd
-    #get Plv from Vlv-Vd
-    result_Plv = np.array([Plv(v, Emax, Emin, x, Tc) for x,v in zip(t,sol[:, 0])])
-    result_Pla = np.array(sol[:, 1])
-    result_Pa = np.array(sol[:, 2])
-    result_Pao = np.array(sol[:, 3])
-    result_Qt = np.array(sol[:, 4])
-    #total current through LV (can be positive or negative):
-    Q_tot = [r(x2-P_lv)/Rm-r(P_lv-x4)/Ra for P_lv,x2,x4 in zip(result_Plv, result_Pla, result_Pao)]
-
-    return (result_Vlv, result_Plv, result_Pla, result_Pa, result_Pao, result_Qt, Q_tot, t) #8 functions
+    
+    return result_Vlv[120000]
 
 def f(start_v, start_pao, Emax, Emin, Rc, Rs, Cs):
   #parameters of circuit (assumed constant here):
@@ -65,11 +57,8 @@ def f(start_v, start_pao, Emax, Emin, Rc, Rs, Cs):
   Vd = float(10) #to choose
 
   start_pla = float(start_v*Elastance(Emax, Emin, 0, Tc)) #in simaan2008dynamical: \sim8.2 when start_Vlv=150. we assume start_pla<start_plv 
-  pv_model= simulator(N, Tc, Rs, Rm, Ra, Rc, Ca, Cs, Cr, Ls, Emax, Emin, Vd, start_v, start_pla, start_pao)
-  Vlv = pv_model[0]
-  ved = Vlv[60000 + 60000]
-  #ves = Vlv[200*60+69000 + 60000] #HR=60
-  return ved
+  
+  return simulator(N, Tc, Rs, Rm, Ra, Rc, Ca, Cs, Cr, Ls, Emax, Emin, Vd, start_v, start_pla, start_pao)
 
 start_vs = np.arange(40., 400., 100.)
 start_paos = np.arange(50., 99., 12.5)
@@ -90,13 +79,12 @@ for i in range(4):
         for m in range(8):
           for n in range(4):
             for q in range(4):
+              
               data[i][j][k][l][m][n][q] = f(start_vs[i], start_paos[j], emaxs[k], emins[l], rcs[m], rss[n], css[q])
 
 interp = RegularGridInterpolator((start_vs, start_paos, emaxs, emins, rcs, rss, css), data, method='pchip', bounds_error=False, fill_value=None)
 
 print("done")
-
-import random
 
 err = 0
 ntot = 500
