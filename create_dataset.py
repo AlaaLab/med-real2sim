@@ -1,3 +1,4 @@
+from scipy.integrate._ivp.radau import C
 # Import necessary libraries
 import torch
 import torch.nn as nn
@@ -33,16 +34,11 @@ def Elastance(Emax,Emin,t, Tc):
     return (Emax-Emin)*1.55*(tn/0.7)**1.9/((tn/0.7)**1.9+1)*1/((tn/1.17)**21.9+1) + Emin
      
 # Define your function here (for example, a 2-variable function)
-def f(x):
-    Tc = x[0]
+def f(Tc, start_v, startp, Rc, Emax, Emin, Vd):
+
     N = 6
-    start_v = x[1]
-    Rc = x[3]
-    Emax = x[4]
-    Emin = x[5]
-    Vd = x[6]
     start_pla = float(start_v*Elastance(Emax, Emin, 0, Tc))
-    start_pao = start_pla + x[2]
+    start_pao = start_pla + startp
     start_pa = start_pao
     start_qt = 0 #aortic flow is Q_T and is 0 at ED, also see Fig5 in simaan2008dynamical
     y0 = [start_v, start_pla, start_pa, start_pao, start_qt]
@@ -72,15 +68,6 @@ def f(x):
 
     return ved, ves, ef
 
-'''
-full input:
-startvs = np.linspace(15., 400., 4)
-startpaos = np.linspace(5., 100., 4)
-emaxs = np.linspace(0.5, 50., 5)
-emins = np.linspace(0.02, 0.1, 3)
-vds = np.linspace(5., 40., 3)
-'''
-
 n0=6
 n1=4
 n2=4
@@ -88,14 +75,15 @@ n3=8
 n4=8
 n5=8
 n6=1
+
 N = n0*n1*n2*n3*n4*n5*n6
 N_test = 50
 n_pars = 7
 print(N)
 
 # Generate training data
-x_train = np.zeros((N, n_pars))
 x_train_tc = torch.zeros(N, n_pars)
+y_train_tc = torch.zeros(N,3)
 
 tcs = np.linspace(0.5, 2., n0)
 startvs = np.linspace(15., 400., n1)
@@ -105,14 +93,6 @@ emaxs = np.linspace(0.5, 50., n4)
 emins = np.linspace(0.02, 0.3, n5)
 vds = np.linspace(4., 40., n6)
 
-'''
-startvs = np.linspace(15., 400., n1)
-startpaos = np.linspace(5., 100., n2)
-emaxs = np.linspace(0.5, 50., n3)
-emins = np.linspace(0.02, 0.1, n4)
-vds = np.linspace(5., 40., n5)
-'''
-
 i = 0
 for Tc in tcs:
   for start_v in startvs:
@@ -121,31 +101,26 @@ for Tc in tcs:
         for Emax in emaxs:
           for Emin in emins:
             for Vd in vds:
-              x_train[i][0] = start_v
-              x_train[i][1] = start_pao
-              x_train[i][2] = Emax
-              x_train[i][3] = Emin
-              x_train[i][4] = Vd
               
-              x_train_tc[i][0] = x_train[i][0]
-              x_train_tc[i][1] = x_train[i][1]
-              x_train_tc[i][2] = x_train[i][2]
-              x_train_tc[i][3] = x_train[i][3]
-              x_train_tc[i][4] = x_train[i][4]
+              x_train_tc[i][0] = Tc
+              x_train_tc[i][1] = start_v
+              x_train_tc[i][2] = start_pao
+              x_train_tc[i][3] = Rc
+              x_train_tc[i][4] = Emax
+              x_train_tc[i][5] = Emin
+              x_train_tc[i][6] = Vd
+
+              ved, ves, ef = f(Tc, start_v, start_pao, Rc, Emax, Emin, Vd)
+              y_train_tc[i][0] = ved
+              y_train_tc[i][1] = ves
+              y_train_tc[i][2] = ef
+
+              i += 1
 
               '''
               ved(v')=ved(v)-v+v'. ef(v')=(ved(v)-v+v'-ves(v)+v-v')/(ved(v)-v+v')=ef(v)*(ves(v) / ves(v)-v+v'), for a fixed v.
               rel. of v': linear. 
               '''
-              i += 1
-
-y_train_tc = torch.zeros(N,3)
-
-for i in range(N):
-  ved, ves, ef = f(x_train[i])
-  y_train_tc[i][0] = ved
-  y_train_tc[i][1] = ves
-  y_train_tc[i][2] = ef
 
 x_test = np.zeros((N_test, n_pars))
 x_test_tc = torch.zeros(N_test, n_pars)
@@ -154,26 +129,36 @@ y_test_tc = torch.zeros(N_test,3)
 print("Done training data")
 
 for i in range(N_test):
-  x_test[i][0] = random.uniform(0.5, 2.)
-  x_test[i][1] = random.uniform(15., 400.)
-  x_test[i][2] = random.uniform(5., 150.)
-  x_test[i][3] = random.uniform(0.05, 4.)
-  x_test[i][4] = random.uniform(0.5, 50.)
-  x_test[i][5] = random.uniform(0.02, 0.3)
-  x_test[i][6] = random.uniform(4., 40.)
+  a = random.uniform(0.5, 2.)
+  b = random.uniform(15., 400.)
+  c = random.uniform(5., 150.)
+  d = random.uniform(0.05, 4.)
+  e = random.uniform(0.5, 50.)
+  ff = random.uniform(0.02, 0.3)
+  g = random.uniform(4., 40.)
 
-  x_test_tc[i][0] = x_test[i][0]
-  x_test_tc[i][1] = x_test[i][1]
-  x_test_tc[i][2] = x_test[i][2]
-  x_test_tc[i][3] = x_test[i][3]
-  x_test_tc[i][4] = x_test[i][4]
-  x_test_tc[i][5] = x_test[i][5]
-  x_test_tc[i][6] = x_test[i][6]
+  x_test_tc[i][0] = a
+  x_test_tc[i][1] = b
+  x_test_tc[i][2] = c
+  x_test_tc[i][3] = d
+  x_test_tc[i][4] = e
+  x_test_tc[i][5] = ff
+  x_test_tc[i][6] = g
 
-for i in range(N_test):
-  ved, ves, ef = f(x_test[i])
+  ved, ves, ef = f(a, b, c, d, e, ff, g)
   y_test_tc[i][0] = ved
   y_test_tc[i][1] = ves
   y_test_tc[i][2] = ef
+  
+print("Done testing data")
 
- print("Done testing data")
+np.save('x_train_tc.npy', x_train_tc)
+np.save('y_train_tc.npy', y_train_tc)
+np.save('x_test_tc.npy', x_test_tc)
+np.save('y_test_tc.npy', y_test_tc)
+
+!ls -lh
+print("Saved")
+
+#for opening again:
+#x_test_tc = np.load('x_test_tc.npy')
