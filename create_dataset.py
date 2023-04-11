@@ -152,8 +152,30 @@ for i in range(N_test):
   
 print("Done testing data")
 
-np.save('x_train_tc.npy', x_train_tc)
-np.save('y_train_tc.npy', y_train_tc)
+#include Vd in the dataset:
+nv = 20
+vds = np.linspace(4., 40., nv)
+
+X_train = torch.zeros(N * nv, n_pars)
+Y_train = torch.zeros(N * nv, 3)
+for i in range(N):
+  for j in range(nv):
+    for k in range(6):
+      X_train[i*nv + j][k] = x_train_tc[i][k] #same first 6 coords
+    #for Tc, X_train has nv values for each 6d point:
+    X_train[i*nv+j][6] = vds[j]
+
+    #Ved:
+    Y_train[i*nv+j][0] = y_train_tc[i][0] - 4. + vds[j]
+    #Ves:
+    Y_train[i*nv+j][1] = y_train_tc[i][1] - 4. + vds[j]
+    #EF:
+    Y_train[i*nv+j][2] = y_train_tc[i][2] * y_train_tc[i][0] / (y_train_tc[i][0] - 4. + vds[j]) # = ef(v)*(ved(v) / ved(v)-v+v')
+
+print("Done")
+
+np.save('X_train.npy', X_train)
+np.save('Y_train.npy', Y_train)
 np.save('x_test_tc.npy', x_test_tc)
 np.save('y_test_tc.npy', y_test_tc)
 
