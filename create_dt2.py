@@ -1,4 +1,4 @@
-#test the dataset in: Copy of new_intervals.ipynb
+#test the dataset in: intervals_6pars.ipynb
 
 from scipy.integrate._ivp.radau import C
 # Import necessary libraries
