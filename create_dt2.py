@@ -38,7 +38,7 @@ def Elastance(Emax,Emin,t, Tc):
 # Define your function here (for example, a 2-variable function)
 def f(Tc, start_v, startp, Rc, Emax, Emin, Vd):
 
-    N = 6
+    N = 10
     start_pla = float(start_v*Elastance(Emax, Emin, 0, Tc))
     start_pao = start_pla + startp
     start_pa = start_pao
@@ -60,8 +60,8 @@ def f(Tc, start_v, startp, Rc, Emax, Emin, Vd):
 
     sol = odeint(heart_ode, y0, t, args = (Rs, Rm, Ra, Rc, Ca, Cs, Cr, Ls, Emax, Emin, Tc)) #t: list of values
 
-    ved = sol[4 * 60000, 0] + Vd
-    ves = sol[200*int(60/Tc)+9000+4*60000, 0] + Vd
+    ved = sol[9 * 60000, 0] + Vd
+    ves = sol[200*int(60/Tc)+9000+9*60000, 0] + Vd
     ef = (ved-ves)/ved * 100.
 
     #ved = Vlv[4 * 60000]
@@ -91,7 +91,7 @@ startvs = np.linspace(15., 400., n1)
 startpaos = np.linspace(5., 150., n2)
 Rc = 0.08
 emaxs = np.linspace(0.5, 50., n3)
-emins = np.linspace(0.02, 0.4, n4)
+emins = np.linspace(0.02, 0.3, n4)
 vds = np.linspace(4., 40., n5)
 
 i = 0
