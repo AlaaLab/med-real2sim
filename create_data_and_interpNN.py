@@ -234,3 +234,40 @@ for epoch in range(500000):
       d2 = 1
       optimizer = torch.optim.Adam(net.parameters(), lr=0.0001)
 
+#for testing the interpolator:
+
+N_test = 100
+n_pars = 3
+
+x_test = np.zeros((N_test, n_pars))
+x_test_tc = torch.zeros(N_test, n_pars)
+y_test_tc = torch.zeros(N_test, 2)
+
+for i in range(N_test):
+  a = random.uniform(0.5, 2.)
+  b = random.uniform(15., 400.)
+  c = 60.
+  d = random.uniform(0.3, 30.)
+  e = 0.1
+  g = 4.
+
+  x_test_tc[i][0] = a
+  x_test_tc[i][1] = b
+  x_test_tc[i][2] = d
+
+  ved, ves = real_f(a, b, c, 0.08, d, e, g)
+  y_test_tc[i][0] = ved
+  y_test_tc[i][1] = ves
+
+error = 0
+
+xt = torch.tensor(x_test_tc, dtype = torch.float64) # 7-dimensional input tensor
+# x = x.view(64, 3)
+yt = torch.tensor(y_test_tc, dtype=torch.float64) # 3-dimensional output tensor
+
+for i in range(N_test):
+  y_pred = net(xt[i])
+  print(y_pred[0].item(), "real", yt[i][0].item())
+  error += abs(y_pred[0] - yt[i][0]) + abs(y_pred[1] - yt[i][1])
+
+print(error / (N_test*2))
