@@ -80,9 +80,9 @@ def f(Tc, start_v, startp, Rc, Emax, Emin, Vd):
     return ved, ves, ef
 
 #method 1:
-n0=10
-n1=15
-n2=20
+n0=20
+n1=20
+n2=35
 
 #method 2:
 '''
@@ -232,4 +232,125 @@ for i in range(N_test):
 
 print("Test error:", error / (N_test*2))
 
-#once the interpolator NN net is created, run the 3DCNN:
+#once the interpolator NN net is created, run the inverse NN:
+
+#check if can learn from ved, ves the original points:
+
+N = 1000
+n_pars = 2
+
+# Generate training data
+x_train_tc = torch.zeros(N, n_pars)
+
+for i in range(N):
+  a = random.uniform(0.5, 2.)
+  b = random.uniform(5, 20)
+  c = random.uniform(0.3, 30.)
+
+  ved, ves, ef = f(a, b, 60., 0.08, c, 0.1, 4.)
+  x_train_tc[i][0] = ved
+  x_train_tc[i][1] = ves
+
+  if (i%50==0): print(i)
+  
+print("Done training data")
+
+# Define the input and output tensors
+x = torch.tensor(x_train_tc, dtype = torch.float64) # 3-dimensional input tensor
+
+# Define a neural network with one hidden layer
+class INVNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(2, 64).double()
+        self.fc2 = nn.Linear(64, 3).double()
+
+    def forward(self, x):
+        x = torch.relu(self.fc1(x))
+        x = self.fc2(x)
+        return x
+
+# Initialize the neural network
+invnet = INVNN()
+
+# Define the loss function and optimizer
+criterion = nn.MSELoss()
+optimizer = torch.optim.Adam(invnet.parameters(), lr=0.01)
+losses = []
+
+# Train the neural network
+for epoch in range(150000):
+    # Forward pass
+    x_pred = invnet(x)
+    y_pred = net(x_pred)
+    loss = criterion(y_pred, x)
+
+    # Backward pass and optimization
+    optimizer.zero_grad()
+    loss.backward()
+    optimizer.step()
+
+    # Print progress
+    if epoch % 100 == 0:
+        print(f'Epoch {epoch}, loss: {loss.item():.4f}')
+        losses.append(loss.item())
+
+#test and plot real vs predicted ved, ves, and efs:
+
+N_test = 100
+x_test_tc = torch.zeros(N_test, 2)
+veds_real = []
+vess_real = []
+efs_real = []
+veds_est = []
+vess_est = []
+efs_est = []
+
+for i in range(N_test):
+  a = random.uniform(0.5, 2.)
+  b = random.uniform(5., 20.)
+  c = 60.
+  d = random.uniform(0.3, 30.)
+  e = 0.1
+  g = 4.
+
+  ved, ves, ef = f(a, b, c, 0.08, d, e, g)
+  x_test_tc[i][0] = ved
+  x_test_tc[i][1] = ves
+
+  veds_real.append(ved)
+  vess_real.append(ves)
+  efs_real.append((ved-ves)/ved*100.)
+
+  #y_test_tc[i][2] = ef
+  
+print("Done testing data")
+
+x = torch.tensor(x_test_tc, dtype = torch.float64) # 7-dimensional input tensor
+
+# Train the neural network
+for xi in x:
+    # Forward pass
+    x_predi = invnet(xi).detach()
+    y_predi = net(x_predi)
+    loss += abs(y_predi[0].item() - xi[0].item()) + abs(y_predi[1].item() - xi[1].item())
+
+    ved = y_predi[0].item()
+    ves = y_predi[1].item()
+    
+    veds_est.append(ved)
+    vess_est.append(ves)
+    efs_est.append((ved-ves)/ved*100.)
+    
+print(loss / (2*N_test))
+
+iters = np.linspace(1, N_test, N_test)
+plt.plot(iters, veds_real, color='r')
+plt.plot(iters, veds_est, color='b')
+plt.show()
+plt.plot(iters, vess_real, color='r')
+plt.plot(iters, vess_est, color='b')
+plt.show()
+plt.plot(iters, efs_real, color='r')
+plt.plot(iters, efs_est, color='b')
+plt.show()
