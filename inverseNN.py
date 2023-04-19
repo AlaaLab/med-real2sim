@@ -245,7 +245,7 @@ x_train_tc = torch.zeros(N, n_pars)
 for i in range(N):
   a = random.uniform(0.5, 2.)
   b = random.uniform(5, 20)
-  c = random.uniform(0.3, 30.)
+  c = random.uniform(0.2, 30.)
 
   ved, ves, ef = f(a, b, 60., 0.08, c, 0.1, 4.)
   x_train_tc[i][0] = ved
@@ -310,7 +310,7 @@ for i in range(N_test):
   a = random.uniform(0.5, 2.)
   b = random.uniform(5., 20.)
   c = 60.
-  d = random.uniform(0.3, 30.)
+  d = random.uniform(0.2, 30.)
   e = 0.1
   g = 4.
 
