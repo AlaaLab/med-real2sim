@@ -262,3 +262,47 @@ plt.show()
 plt.plot(iters,simefs, color='r')
 plt.plot(iters, efs, color='b')
 plt.show()
+
+#pv loop simulator (plots the pv loop):
+
+def pvloop_simulator(Tc, start_v, startp, Rc, Emax, Emin, Vd, Ca):
+
+    N = 10
+    start_pla = float(start_v*Elastance(Emax, Emin, 0, Tc))
+    start_pao = start_pla + startp
+    start_pa = start_pao
+    start_qt = 0 #aortic flow is Q_T and is 0 at ED, also see Fig5 in simaan2008dynamical
+    y0 = [start_v, start_pla, start_pa, start_pao, start_qt]
+
+    t = np.linspace(0, Tc*N, int(60000*N)) #spaced numbers over interval (start, stop, number_of_steps), 60000 time instances for each heart cycle
+    #changed to 60000 for having integer positions for Tmax
+    #obtain 5D vector solution:
+    
+    Rs=float(1.0000)
+    Rm=float(0.0050)
+    Ra=float(0.0010)
+    Rc=float(0.06)
+    Cs=float(1.3300)
+    Cr=float(4.400)
+    Ls=float(0.0005)
+
+    sol = odeint(heart_ode, y0, t, args = (Rs, Rm, Ra, Rc, Ca, Cs, Cr, Ls, Emax, Emin, Tc)) #t: list of values
+
+    result_Vlv = np.array(sol[:, 0]) + Vd
+    result_Plv = np.array([Plv(v, Emax, Emin, xi, Tc) for xi,v in zip(t,sol[:, 0])])
+
+    minv = min(result_Vlv[9*60000:10*60000-1])
+    minp = min(result_Plv[9*60000:10*60000-1])
+    
+    plt.plot(result_Vlv[9*60000:10*60000], result_Plv[9*60000:10*60000])
+    plt.show()
+
+    ved = sol[9*60000, 0] + Vd
+    ves = sol[200*int(60/Tc)+9000+9*60000, 0] + Vd
+    ef = (ved-ves)/ved * 100.
+    #ved = Vlv[4 * 60000]
+    #ves = Vlv[200*int(60)+9000 + 4 * 60000]
+    #ef = (ved-ves)/ved*100
+
+    return ved, ves, minv, minp
+
