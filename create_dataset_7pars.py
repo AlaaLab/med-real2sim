@@ -80,7 +80,7 @@ def f(Tc, start_v, startp, Rc, Emax, Emin, Vd, Ca):
 
     return ved, ves, minv, minp
 
-ts = np.linspace(0.7, 1.3, 6)
+ts = np.linspace(0.5, 2., 6)
 vs = np.linspace(-20., 400., 4)
 startps = np.linspace(40., 110., 4)
 rcs = np.linspace(0.02, 0.09, 6)
