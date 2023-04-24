@@ -84,7 +84,7 @@ def f(Tc, start_v, startp, Rc, Emax, Emin, Vd):
 ts = np.linspace(0.7, 1.3, 6)
 vs = np.linspace(-20., 400., 3)
 startps = np.linspace(40., 110., 3)
-rcs = np.linspace(0.08, 0.09, 5)
+rcs = np.linspace(0.02, 0.09, 5)
 emaxs = np.linspace(0.2, 16., 6)
 emins = np.linspace(0.02, 0.1, 6)
 vds = np.linspace(4., 15., 4)
