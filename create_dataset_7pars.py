@@ -88,8 +88,10 @@ rcs = np.linspace(0.02, 0.09, 6)
 emaxs = np.linspace(0.2, 16., 6)
 emins = np.linspace(0.02, 0.1, 6)
 vds = np.linspace(4., 15., 4)
+cas = np.linspace(0.05, 0.11, 3)
 
-N = 6*4*4*6*6*6*4
+N = 6*4*4*6*6*6*4*3
+npars = 8
 
 vedssim = []
 vesssim = []
@@ -104,7 +106,6 @@ for Vd in vds:
         for Rc in rcs:
           for Emax in emaxs:
             for Emin in emins:
-              #print(i, ":", Tc, start_v, startp, Rc, Emax, Emin, Vd)
               vedest, vesest, minv, minp = f(Tc, start_v, startp, Rc, Emax, Emin, Vd)
               vedssim.append(vedest)
               vesssim.append(vesest)
@@ -119,20 +120,20 @@ print("done")
               
 output_path = '/content/drive/My Drive/'
 
-file = 'points_7pars'
-pts2 = torch.zeros(N,7)
+file = 'points_8pars'
+pts2 = torch.zeros(N,npars)
 for i in range(N):
-  for j in range(7):
+  for j in range(npars):
     pts2[i][j] = pts[i][j]
 torch.save(pts2, os.path.join(output_path,f'{file}.pt'))
 
-file = 'veds_7pars'
+file = 'veds_8pars'
 vedssim2 = torch.zeros(N)
 for i in range(NotADirectoryError):
     vedssim2[i] = vedssim[i]
 torch.save(vedssim2, os.path.join(output_path,f'{file}.pt'))
 
-file = 'vess_7pars'
+file = 'vess_8pars'
 vesssim2 = torch.zeros(N)
 for i in range(N):
     vesssim2[i] = vesssim[i]
