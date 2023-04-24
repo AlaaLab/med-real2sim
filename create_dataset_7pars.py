@@ -306,3 +306,6 @@ def pvloop_simulator(Tc, start_v, startp, Rc, Emax, Emin, Vd, Ca):
 
     return ved, ves, minv, minp
 
+#example of use:
+
+ved, ves, minv, minp = pvloop_simulator(1., 100., 50., 0.07, 3., 0.08, 5., 0.08):
