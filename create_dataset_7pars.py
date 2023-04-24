@@ -82,14 +82,14 @@ def f(Tc, start_v, startp, Rc, Emax, Emin, Vd):
     return ved, ves, minv, minp
 
 ts = np.linspace(0.7, 1.3, 6)
-vs = np.linspace(-20., 400., 3)
-startps = np.linspace(40., 110., 3)
-rcs = np.linspace(0.02, 0.09, 5)
+vs = np.linspace(-20., 400., 4)
+startps = np.linspace(40., 110., 4)
+rcs = np.linspace(0.02, 0.09, 6)
 emaxs = np.linspace(0.2, 16., 6)
 emins = np.linspace(0.02, 0.1, 6)
 vds = np.linspace(4., 15., 4)
 
-N = 6*3*3*5*6*6*4
+N = 6*4*4*6*6*6*4
 
 vedssim = []
 vesssim = []
