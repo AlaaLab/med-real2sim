@@ -240,7 +240,7 @@ print("Test error:", error / (N_test*2))
 if (error/(N_test*2)<1.):
   import os
   output_path = '/content/drive/My Drive/'
-  file = 'model_net_vedves_6000'
+  file = 'model_net_vedves8'
   torch.save(net.state_dict(), os.path.join(output_path,f'{file}__weight.pt'))
 
 #plot the results: (real vs estimated ved, ves, ef)
