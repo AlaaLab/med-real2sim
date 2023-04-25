@@ -86,7 +86,7 @@ emaxs = np.linspace(0.2, 8., 6)
 emins = np.linspace(0.02, 0.1, 6)
 vds = np.linspace(4., 15., 4)
 cas = np.linspace(0.05, 0.11, 3)
-rss = np.linspace(0.2, 2., 5)
+rss = np.linspace(0.5, 2., 5)
 
 N = 6*4*4*6*6*6*4*3*5
 npars = 9
@@ -208,7 +208,7 @@ for i in range(N_test):
   x_test_tc[i][5] = random.uniform(0.02, 0.1)
   x_test_tc[i][6] = random.uniform(4., 15.)
   x_test_tc[i][7] = random.uniform(0.05, 0.11)
-  x_test_tc[i][8] = random.uniform(0.2, 2.)
+  x_test_tc[i][8] = random.uniform(0.5, 2.)
 
   #ved, ves, vmin, pmin = f(x_test_tc[i][0], x_test_tc[i][1], x_test_tc[i][2], x_test_tc[i][3], x_test_tc[i][4], x_test_tc[i][5], x_test_tc[i][6], x_test_tc[i][7])
   ved, ves, vmin, pmin = f(x_test_tc[i][0].item(), x_test_tc[i][1].item(), x_test_tc[i][2].item(), x_test_tc[i][3].item(), x_test_tc[i][4].item(), x_test_tc[i][5].item(), x_test_tc[i][6].item(), x_test_tc[i][7].item(), x_test_tc[i][8].item())
