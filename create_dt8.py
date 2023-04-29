@@ -182,7 +182,7 @@ y = torch.tensor(veds2, dtype=torch.float64) # 3-dimensional output tensor
 class Interpolator(nn.Module):
     def __init__(self):
         super().__init__()
-        self.fc1 = nn.Linear(9, 96).double()
+        self.fc1 = nn.Linear(7, 96).double()
         self.fc2 = nn.Linear(96, 2).double()
 
     def forward(self, z):
