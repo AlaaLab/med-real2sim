@@ -66,7 +66,6 @@ def f_nolvad(Tc, start_v, Emax):
 
 #for the LVAD:
 counter = 0
-Tc = 1.
 npoints = int(Tc * 70 * 10000) #70 heart cycles, and 10000 timepoints for each cycle
 #so the end of each cycle happens at the timepoints 10000*n, n whole number
 x6vals = np.zeros((npoints))
