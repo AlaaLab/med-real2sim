@@ -282,9 +282,9 @@ def f_lvad(Tc, start_v, Emax, c, slope, w0, x60, y00, y01, y02, y03, y04): #slop
     plt.show()
     
     #plot x6(t)
-    plt.title("x_6(t)")
-    plt.xlabel('Flow through LVAD (ml/s)')
-    plt.ylabel('t (s)')
+    plt.title("Flow through LVAD")
+    plt.ylabel('x_6(t) (ml/s)')
+    plt.xlabel('t (s)')
     plt.plot(t, result_x6)
     plt.show()
 
