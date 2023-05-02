@@ -62,7 +62,7 @@ def f_nolvad(Tc, start_v, Emax):
     minv = min(result_Vlv[19*60000:20*60000-1])
     minp = min(result_Plv[19*60000:20*60000-1])
 
-    return ef
+    return ef, sol[19*60000, 0], sol[19*60000, 1], sol[19*60000, 2], sol[19*60000, 3], sol[19*60000, 4]
 
 #for the LVAD:
 counter = 0
@@ -148,7 +148,7 @@ def Elastance(Emax,Emin,t, Tc):
     tn = t/(0.2+0.15*Tc)
     return (Emax-Emin)*1.55*(tn/0.7)**1.9/((tn/0.7)**1.9+1)*1/((tn/1.17)**21.9+1) + Emin
      
-def f_lvad(Tc, start_v, Emax, c, slope, w0, x60): #slope is slope0 for w
+def f_lvad(Tc, start_v, Emax, c, slope, w0, x60, y00, y01, y02, y03, y04): #slope is slope0 for w
 
     N = 70
     Emin = 0.1
@@ -168,11 +168,12 @@ def f_lvad(Tc, start_v, Emax, c, slope, w0, x60): #slope is slope0 for w
     start_qt = 0 #aortic flow is Q_T and is 0 at ED, also see Fig5 in simaan2008dynamical
 
     y0 = [start_v, start_pla, start_pa, start_pao, start_qt, x60, w0]
+    y0 = [y00 - 4., y01, y02, y03, y04, x60, w0]
 
     ncycle = 10000
-    n = 70 * ncycle
+    n = N * ncycle
     sol = np.zeros((n, 7))
-    t = np.linspace(0., Tc * 70, n)
+    t = np.linspace(0., Tc * N, n)
     for j in range(7):
       sol[0][j] = y0[j]
 
@@ -294,8 +295,8 @@ slope0 = 400.  #from simaan2008dynamical
 w0 = 13000. #from simaan2008dynamical
 x60 = 122. #from simaan2008dynamical
 
-ef_nolvad = f_nolvad(Tc, start_v, Emax)
-new_ef, CO, MAP = f_lvad(Tc, start_v, Emax, c, slope0, w0, x60)
+ef_nolvad, y00, y01, y02, y03, y04 = f_nolvad(Tc, start_v, Emax)
+new_ef, CO, MAP = f_lvad(Tc, start_v, Emax, c, slope0, w0, x60, y00, y01, y02, y03, y04)
 
 print("EF before LVAD:", ef_nolvad)
 print("New EF after LVAD:", new_ef, "New CO:", CO, "New MAP:", MAP)
