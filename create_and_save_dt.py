@@ -50,7 +50,6 @@ def f(Tc, start_v, startp, Rc, Emax, Emin, Vd):
     Rs=float(1.0000)
     Rm=float(0.0050)
     Ra=float(0.0010)
-    Rc=float(0.06)
     Ca=float(0.0800)
     Cs=float(1.3300)
     Cr=float(4.400)
