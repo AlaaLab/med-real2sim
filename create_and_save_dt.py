@@ -89,7 +89,7 @@ tcs = np.linspace(0.5, 2., n0)
 startvs = np.linspace(-20., 400., n1)
 startpaos = np.linspace(60., 80., n2)
 rcs = np.linspace(0.07, 4., n3)
-emaxs = np.linspace(0.5, 8., n4)
+emaxs = np.linspace(0.5, 10., n4)
 emins = np.linspace(0.02, 0.3, n5)
 vds = np.linspace(4., 40., n6)
 
@@ -133,7 +133,7 @@ for i in range(N_test):
   b = random.uniform(-20., 400.)
   c = random.uniform(60., 80.)
   d = random.uniform(0.07, 4.)
-  e = random.uniform(0.5, 8.)
+  e = random.uniform(0.5, 10.)
   ff = random.uniform(0.02, 0.3)
   g = random.uniform(4., 40.)
 
