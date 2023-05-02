@@ -85,7 +85,7 @@ def f(Tc, start_v, startp, Rc, Emax, Emin, Vd, Ca, Rs, Cs, Rm):
 
 ts = np.linspace(0.5, 2., 4)
 vs = np.linspace(-20., 250., 4)
-startps = np.linspace(40., 80., 2)
+startps = np.linspace(60., 90., 2)
 rcs = np.linspace(0.08, 5., 1)
 emaxs = np.linspace(0.5, 4., 4)
 emins = np.linspace(0.06, 0.1, 4)
@@ -233,7 +233,7 @@ y_test_tc = torch.zeros(N_test, 2)
 for i in range(N_test):
   x_test_tc[i][0] = random.uniform(0.5, 2.)
   x_test_tc[i][1] = random.uniform(-20., 250.)
-  x_test_tc[i][2] = random.uniform(40., 80.)
+  x_test_tc[i][2] = random.uniform(60., 90.)
   x_test_tc[i][3] = random.uniform(0.5, 4.)
   x_test_tc[i][4] = random.uniform(0.06, 0.1)
   x_test_tc[i][5] = random.uniform(0.5, 2.)
