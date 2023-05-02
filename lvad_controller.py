@@ -236,16 +236,6 @@ def f_lvad(Tc, start_v, Emax, c, slope, w0, x60): #slope is slope0 for w
       result_x6.append(sol[i, 5])
       result_x7.append(sol[i, 6])
       Pao.append(sol[i, 3])
-    
-    '''
-    #plot result_Plv, and aortic pressure:
-    plt.title("Plv (red), Pao (blue)")
-    plt.plot(t, result_Plv, color='r')
-    plt.xlabel('t (s)')
-    plt.ylabel(Pressures (mmHg))
-    plt.plot(t, Pao, color='b')
-    plt.show()
-    '''
 
     #plot pv loops:
     plt.title("PV loops (black: no LVAD; blue: with LVAD)")
@@ -253,6 +243,16 @@ def f_lvad(Tc, start_v, Emax, c, slope, w0, x60): #slope is slope0 for w
     plt.xlabel('V_LV (ml)')
     plt.ylabel('P_LV (mmHg)')
     plt.show()
+
+    '''
+    #plot result_Plv, and aortic pressure:
+    plt.title("Plv (red), Pao (blue)")
+    plt.plot(t, result_Plv, color='r')
+    plt.plot(t, Pao, color='b')
+    plt.xlabel('t (s)')
+    plt.ylabel('Pressures (mmHg)')
+    plt.show()
+    '''
 
     #plot Vlv(t):
     plt.plot(t[48*ncycle: 52*ncycle], result_Vlv[48*ncycle: 52*ncycle])
@@ -290,9 +290,9 @@ def f_lvad(Tc, start_v, Emax, c, slope, w0, x60): #slope is slope0 for w
 
     return ef, CO, map
 
-c = 0.061  #(in simaan2008dynamical: 0.67, but too fast -> 0.061 gives better shape)
+c = 0.065  #(in simaan2008dynamical: 0.67, but too fast -> 0.061 gives better shape)
 slope0 = 400.  #from simaan2008dynamical
-w0 = 13700. #from simaan2008dynamical
+w0 = 13000. #from simaan2008dynamical
 x60 = 122. #from simaan2008dynamical
 
 ef_nolvad = f_nolvad(Tc, start_v, Emax)
@@ -304,10 +304,10 @@ print("New EF after LVAD:", new_ef, "New CO:", CO, "New MAP:", MAP)
 '''
 Values that can be arbitrarily chosen for the LVAD:
 
-- c (rate at which w is updated after about 2.5 seconds)
-- slope0 (initial slope of w, when there are still not 3 points for calculating the slope of the envelope of x6)
-- w0 (initial value of w)
-- x60 (initial flow in the LVAD)
+- c (rate at which w is updated after about 2.5 seconds, using the envelope of x6) (0.67 in simaan2008dynamical but taken lower)
+- slope0 (initial slope of w during the first \sim2.5s, when there are still not 3 points for calculating the slope of the envelope of x6) (around 400 in simaan2008dynamical)
+- w0 (initial value of w, in rpm) (around 12000-14000 in simaan2008dynamical)
+- x60 (initial flow in the LVAD) (around 122 in simaan2008dynamical)
 
 - internal values of the LVAD: R0, Ri, Rk (defined by x1bar, alpha), Li, L0, b0, b1, b2. 
 -> Taken from simaan2008dynamical but could also take b0, b1, b2 from choi1997modeling ([22] in simaan2008dynamical)
