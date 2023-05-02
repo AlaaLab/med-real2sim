@@ -28,7 +28,6 @@ def heart_ode0(y, t, Rs, Rm, Ra, Rc, Ca, Cs, Cr, Ls, Emax, Emin, Tc):
 def f_nolvad(Tc, start_v, Emax):
 
     N = 20
-    Rc = 0.08
     Emin = 0.1
     Vd = 4.
     Rs=float(1.0000)
