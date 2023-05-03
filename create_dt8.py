@@ -331,7 +331,7 @@ def pvloop_simulator(Tc, start_v, startp, Emax, Emin, Vd, Rs, Cs):
     minp = min(result_Plv[(N-1)*60000:N*60000-1])
     maxp = max(result_Plv[(N-1)*60000:N*60000-1])
 
-    ved2 = sol[(N-1)*60000 - 1, 0] + Vd
+    ved2 = sol[(N-2)*60000, 0] + Vd
     isperiodic = 0
     if (abs(ved-ved2) > 5.): isperiodic = 1
 
