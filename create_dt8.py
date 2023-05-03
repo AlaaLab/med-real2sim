@@ -297,7 +297,8 @@ plt.show()
 
 #example of use:
 
-def pvloop_simulator(Tc, start_v, startp, Rc, Emax, Emin, Vd, Ca, Rs, Cs, Rm):
+#def pvloop_simulator(Tc, start_v, startp, Rc, Emax, Emin, Vd, Ca, Rs, Cs, Rm):
+def pvloop_simulator(Tc, start_v, startp, Emax, Emin, Vd, Rs, Cs):
     N = 70
     start_pla = float(start_v*Elastance(Emax, Emin, 0, Tc))
     start_pao = start_pla + startp
@@ -310,10 +311,10 @@ def pvloop_simulator(Tc, start_v, startp, Rc, Emax, Emin, Vd, Ca, Rs, Cs, Rm):
     #obtain 5D vector solution:
     
     #Rs=float(1.0000)
-    #Rm=float(0.0050)
+    Rm=float(0.0050)
     Ra=float(0.0010)
-    #Rc=float(0.06)
-    #Ca=float(0.0800)
+    Rc=float(0.08)
+    Ca=float(0.0800)
     #Cs=float(1.3300)
     Cr=float(4.400)
     Ls=float(0.0005)
@@ -336,10 +337,20 @@ def pvloop_simulator(Tc, start_v, startp, Rc, Emax, Emin, Vd, Ca, Rs, Cs, Rm):
 
     plt.plot(result_Vlv[(N-1)*60000:(N)*60000], result_Plv[(N-1)*60000:N*60000])
     plt.show()
-    #ved = Vlv[4 * 60000]
-    #ves = Vlv[200*int(60)+9000 + 4 * 60000]
-    #ef = (ved-ves)/ved*100
+    
+    #check if pressures are realistic:
+    isrealistic_strict = 0
+    isrealistic_2 = 0
+    if (ped > 5. and ped < 12. and pes < 140. and pes > 90.): isrealistic_strict = 1
+    if (ped > 4. and ped < 15 and pes < 150. and pes > 80): isrealistic_2 = 1
+    
+    if (minv < 0 or minp<0): print("Error: negative values")
+    if (isrealistic_strict==0):
+        if (isrealistic_2==1): print("Pressure slightly off the normal ranges")
+        else: print("Pressure not in normal ranges")
+    else: print("Pressure in normal ranges")
 
-    return ved, ves, ef, minv, minp, maxp, isperiodic
+    return ved, ves, ef, minv, minp, maxp, isperiodic, isrealistic_strict, isrealistic_2
 
-ved, ves, minv, minp, maxp, isperiodic = pvloop_simulator(1., 140., 60., 0.08, 3., 0.05, 10., 0.08, 1., 1.33, 0.005)
+#parameters to send to pvloop_simulator: Tc, start_v, startp, Emax, Emin, Vd, Rs, Cs
+ved, ves, ef, minv, minp, maxp, isperiodic, isrealistic_strict, isrealistic_2 = pvloop_simulator(1., 140., 60., 3., 0.05, 10., 1., 1.33)
