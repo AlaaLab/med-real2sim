@@ -327,6 +327,8 @@ def pvloop_simulator(Tc, start_v, startp, Emax, Emin, Vd, Rs, Cs):
     ved = sol[(N-1)*60000, 0] + Vd
     ves = sol[200*int(60/Tc)+9000+(N-1)*60000, 0] + Vd
     ef = (ved-ves)/ved * 100.
+    ped = result_Plv[(N-1)*6000]
+    pes = result_Plv[200*int(60/Tc)+9000+(N-1)*60000]
     minv = min(result_Vlv[(N-1)*60000:N*60000-1])
     minp = min(result_Plv[(N-1)*60000:N*60000-1])
     maxp = max(result_Plv[(N-1)*60000:N*60000-1])
