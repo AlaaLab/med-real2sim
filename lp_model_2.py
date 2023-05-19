@@ -28,15 +28,28 @@ def heart_ode(y, t, R1, R2, R3, R4, C2, C3, L, Emax, Emin, Tc):
     e_t = Elastance(Emax, Emin, t, Tc)
     dydt = [0, 1/(R1*C2)*(-x2+x3), 1/(R1*C3)*(x2-x3), 0]
     if (t>0.05):
-      if (x2 <= x1*e_t and x1*e_t > x3): #ejection
+      if (x2 <= x1*e_t and x1*e_t >= x3): #ejection x1*e_t >= x3
         dydt[0] += -x4
         dydt[2] += x4/C3
         dydt[3] += e_t/L*x1 - x3/L - (R3+R4)*x4/L
       else: #filling
-        if (x2 > x1*e_t and x1*e_t < x3):
+        if (x2 >= x1*e_t and x1*e_t <= x3):
           dydt[0] += 1/R2*(-x1*e_t+x2)
           dydt[1] += e_t/(R2*C2)*x1 - x2/(R2*C2)
-        
+
+    return dydt
+
+#another version of the equations: (obtained with the general method, and with act() for controlling if there is flow or not based on differences of pressures)
+def heart_ode1(y, t, R1, R2, R3, R4, C2, C3, L, Emax, Emin, Tc):
+    x1, x2, x3, x4 = y #here y is a vector of 4 values (not functions), at time t, used for getting (dy/dt)(t)
+    e_t = Elastance(Emax, Emin, t, Tc)
+
+    d1 = relu(x2-x1*e_t)/R2 - x4
+    d2 = (x3-x2)/(R1*C2) - relu(x2-x1*e_t)/(R2*C2)
+    d3 = x4/C3 + (x2-x3)/(R1*C3)
+    d4 = ( 1/L*(-x3+x1*e_t-x4*(R4 + R3)) ) * act(x1*e_t-x3)
+    dydt = [d1, d2, d3, d4]
+
     return dydt
 
 #returns Plv at time t using Elastance(t) and Vlv(t)-Vd=x1
@@ -99,7 +112,7 @@ R3 = 0.001 # Ra
 R4 = 0.0398 # Rc
 C2 = 4.4 # Cr
 C3 = 1.33 # Cs
-L = 0.0005 # Ls
+L = 0.000005 # Ls
 
 #parameters for elastance:
 Emax = 2.
