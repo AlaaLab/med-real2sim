@@ -8,7 +8,7 @@ R3 = 0.001 = Ra
 R4 = 0.0398 = Rc
 C2 = 4.4 = Cr
 C3 = 1.33 = Cs
-L = 0.0005 = Ls
+L = 0.000005 # = Ls
 -> No Ca in this model.
 -> One less state variable here (only 4 instead of 5)
 '''
