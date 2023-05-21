@@ -298,7 +298,8 @@ def f_lvad(Tc, c, slope, w0, x60, y00, y01, y02, y03, y04): #slope is slope0 for
     plt.plot(result_Vlv[65*ncycle:70*ncycle], result_Plv[65*ncycle:70*ncycle], color=(41/255, 128/255, 205/255), label='With FC-LVAD')
     plt.xlabel('LV volume (ml)')
     plt.ylabel('LV pressure (mmHg)')
-    plt.xlim(20,130)
+    #plt.xlim(20,130)
+    plt.ylim(0,170)
     plt.legend(loc='upper left', framealpha=1)
     plt.show()
 
@@ -353,7 +354,7 @@ start_v = 140.
 start_p = 80.
 Emax = 2.
 Emin = 0.1
-Vd = 4.
+Vd = 10.
 Rs= 1.0000
 Cs= 1.3300
 
