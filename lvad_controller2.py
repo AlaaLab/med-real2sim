@@ -99,22 +99,13 @@ def Elastance(Emax,Emin,t, Tc):
     return (Emax-Emin)*1.55*(tn/0.7)**1.9/((tn/0.7)**1.9+1)*1/((tn/1.17)**21.9+1) + Emin
 
 #returns pv loop and ef when there is no lvad:
-def f_nolvad(Tc, start_v, Emax, showpvloop):
+def f_nolvad(Tc, start_v, start_p, showpvloop):
 
     N = 20
-    Emin = 0.1
-    Vd = 4.
-    Rs=float(1.0000)
-    Rm=float(0.0050)
-    Ra=float(0.0010)
-    Rc = 0.08
-    Ca=float(0.0800)
-    Cs=float(1.3300)
-    Cr=float(4.400)
-    Ls=float(0.0005)
+    global Emax, Emin, Vd, Rs, Rm, Ra, Rc, Ca, Cs, Cr, Ls
 
     start_pla = float(start_v*Elastance(Emax, Emin, 0, Tc))
-    start_pao = 60.
+    start_pao = start_pla + start_p
     start_pa = start_pao
     start_qt = 0 #aortic flow is Q_T and is 0 at ED, also see Fig5 in simaan2008dynamical
 
@@ -139,27 +130,12 @@ def f_nolvad(Tc, start_v, Emax, showpvloop):
     return ef, ((ved - ves) * 60/Tc ) / 1000, sol[19*60000, 0], sol[19*60000, 1], sol[19*60000, 2], sol[19*60000, 3], sol[19*60000, 4]
 
 #returns the w at which suction occurs: (i.e. for which the slope of the envelopes of x6 becomes negative)
-def get_suctionw(Tc, start_v, Emax, y00, y01, y02, y03, y04, w0, x60, ratew): #slope is slope0 for w
+def get_suctionw(Tc, y00, y01, y02, y03, y04, w0, x60, ratew): #slope is slope0 for w
 
     N = 70
-    Emin = 0.1
-    Vd = 4.
-    Rs=float(1.0000)
-    Rm=float(0.0050)
-    Ra=float(0.0010)
-    Rc = 0.08
-    Ca=float(0.0800)
-    Cs=float(1.3300)
-    Cr=float(4.400)
-    Ls=float(0.0005)
+    global Emax, Emin, Vd, Rs, Rm, Ra, Rc, Ca, Cs, Cr, Ls
 
-    start_pla = float(start_v*Elastance(Emax, Emin, 0, Tc))
-    start_pao = 60.
-    start_pa = start_pao
-    start_qt = 0 #aortic flow is Q_T and is 0 at ED, also see Fig5 in simaan2008dynamical
-
-    y0 = [start_v, start_pla, start_pa, start_pao, start_qt, x60, w0]
-    y0 = [y00 - 4., y01, y02, y03, y04, x60, w0]
+    y0 = [y00, y01, y02, y03, y04, x60, w0]
 
     ncycle = 20000
     n = N * ncycle
@@ -237,27 +213,12 @@ def get_suctionw(Tc, start_v, Emax, y00, y01, y02, y03, y04, w0, x60, ratew): #s
 
     return suction_w
      
-def f_lvad(Tc, start_v, Emax, c, slope, w0, x60, y00, y01, y02, y03, y04): #slope is slope0 for w
+def f_lvad(Tc, c, slope, w0, x60, y00, y01, y02, y03, y04): #slope is slope0 for w
 
     N = 70
-    Emin = 0.1
-    Vd = 4.
-    Rs=float(1.0000)
-    Rm=float(0.0050)
-    Ra=float(0.0010)
-    Rc = 0.08
-    Ca=float(0.0800)
-    Cs=float(1.3300)
-    Cr=float(4.400)
-    Ls=float(0.0005)
-
-    start_pla = float(start_v*Elastance(Emax, Emin, 0, Tc))
-    start_pao = 60.
-    start_pa = start_pao
-    start_qt = 0 #aortic flow is Q_T and is 0 at ED, also see Fig5 in simaan2008dynamical
-
-    y0 = [start_v, start_pla, start_pa, start_pao, start_qt, x60, w0]
-    y0 = [y00 - 4., y01, y02, y03, y04, x60, w0]
+    global Emax, Emin, Vd, Rs, Rm, Ra, Rc, Ca, Cs, Cr, Ls
+    
+    y0 = [y00, y01, y02, y03, y04, x60, w0]
 
     ncycle = 10000
     n = N * ncycle
@@ -386,19 +347,32 @@ def f_lvad(Tc, start_v, Emax, c, slope, w0, x60, y00, y01, y02, y03, y04): #slop
 
     return ef, CO, map
 
-#input:
+#learnable parameters:
 Tc = 60/75
 start_v = 140.
+start_p = 80.
 Emax = 2.
+Emin = 0.1
+Vd = 4.
+Rs= 1.0000
+Cs= 1.3300
+
+#fixed parameters:
+Rm= 0.0050
+Ra= 0.0010
+Rc = 0.08
+Ca= 0.0800
+Cr= 4.400
+Ls= 0.0005
 
 #get values for periodic loops:
-ef_nolvad, co_nolvad, y00, y01, y02, y03, y04 = f_nolvad(Tc, start_v, Emax, 0)
+ef_nolvad, co_nolvad, y00, y01, y02, y03, y04 = f_nolvad(Tc, start_v, start_p, 0)
 
 #get suction w: (make w go linearly from w0 to w0 + maxtime * 400, and find w at which suction occurs)
 w0 = 5000.
 x60 = 250.
 ratew = 400.
-suctionw = get_suctionw(Tc, start_v, Emax, y00, y01, y02, y03, y04, w0, x60, ratew)
+suctionw = get_suctionw(Tc, y00, y01, y02, y03, y04, w0, x60, ratew)
 
 #parameters for lvad:
 c = 0.065 #(in simaan2008dynamical: 0.67, but too fast -> 0.061 gives better shape)
@@ -409,9 +383,9 @@ w0 = suctionw / gamma  #if doesn't work (x6 negative), change gamma down to 1.4 
 x60 = 122. #from simaan2008dynamical
 
 #only called for comparing pv loops:
-f_nolvad(Tc, start_v, Emax, 1)
+f_nolvad(Tc, start_v, start_p, 1)
 #compute new pv loops and ef with lvad added:
-new_ef, CO, MAP = f_lvad(Tc, start_v, Emax, c, slope0, w0, x60, y00, y01, y02, y03, y04)
+new_ef, CO, MAP = f_lvad(Tc, c, slope0, w0, x60, y00, y01, y02, y03, y04)
 
 print("\nParameters: Tc, start_v, Emax:", Tc, start_v, Emax)
 print("Suction speed:", suctionw)
