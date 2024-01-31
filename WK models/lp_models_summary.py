@@ -1,4 +1,10 @@
-
+import numpy as np
+import pandas as pd
+from scipy.integrate import odeint
+from scipy import interpolate
+from matplotlib import pyplot
+import sys
+import matplotlib.pyplot as plt
 
 class ferreira2005nonlinear:
   def __init__(self):
@@ -99,7 +105,7 @@ class ferreira2005nonlinear:
     return ved, ves, ped, pes
   
   
- class stergiopoulos1996determinants: 
+class stergiopoulos1996determinants: 
   def __init__(self):
     self.n_parameters = 15
     self.name_parameters = ['Tc', 'Pv', 'Rc', 'Rp', 'Rv', 'C', 'Emax', 'Emin', 'n1', 'n2', 'alpha1', 'alpha2', 'Vd', 'start_v', 'start_pa']
@@ -249,17 +255,14 @@ class her2018windkessel:
     plt.show()
 
     return ved, ves, ped, pes
-  
-  
+
 ## example of use:
 
-import numpy as np
-import pandas as pd
-from scipy.integrate import odeint
-from scipy import interpolate
-from matplotlib import pyplot
-import sys
-import matplotlib.pyplot as plt
-
-model1 = her2018windkessel()
+model1 = ferreira2005nonlinear()
 ved, ves, ped, pes = model1.simulator()
+
+model2 = stergiopoulos1996determinants()
+ved, ves, ped, pes = model2.simulator()
+
+model3 = her2018windkessel()
+ved, ves, ped, pes = model3.simulator()
