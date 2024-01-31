@@ -1,3 +1,19 @@
+'''
+This file provides the code for simulating the PV loops of circuits referenced in various studies.
+It includes default values for parameters, along with their estimated ranges of validity. Each class
+within the file is associated with a specific circuit based on the research presented in the corresponding paper:
+
+- ferreira2005nonlinear: Ferreira, Antonio, et al. "A nonlinear state-space model of a combined cardiovascular
+system and a rotary pump." Proceedings of the 44th IEEE Conference on Decision and Control. IEEE, 2005.
+
+- stergiopoulos1996determinants: Stergiopulos, N. I. K. O. S., JEAN-JACQUES Meister, and N. I. C. O. Westerhof.
+"Determinants of stroke volume and systolic and diastolic aortic pressure." American Journal of Physiology-Heart
+and Circulatory Physiology 270.6 (1996): H2050-H2059.
+
+- her2018windkessel: Her, Keun, et al. "Windkessel model of hemodynamic state supported by a pulsatile ventricular
+assist device in premature ventricle contraction." Biomedical engineering online 17 (2018): 1-13.
+'''
+
 import numpy as np
 import pandas as pd
 from scipy.integrate import odeint
