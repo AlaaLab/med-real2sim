@@ -1,5 +1,3 @@
-# code from simulators_7pars.py
-
 import numpy as np
 import torch
 from torch.utils import data
