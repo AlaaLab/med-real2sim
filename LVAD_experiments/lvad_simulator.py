@@ -383,7 +383,6 @@ c = 0.065 #(in simaan2008dynamical: 0.67, but too fast -> 0.061 gives better sha
 gamma = 1.4 #or between 1.4-2.1 (will make the new pv loop with lvad get closer or further away from the no-lvad pv loop)
 slope0 = 100.
 w0 = suctionw / gamma  #if doesn't work (x6 negative), change gamma down to 1.4 or up to 2.1
-x60 = 122. #from simaan2008dynamical
 x60=0.
 #plot pvloop without lvad for comparing:
 plt.plot(vlvs, plvs, color='black', label='Without FC-LVAD')
