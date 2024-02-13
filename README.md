@@ -1,7 +1,4 @@
-# in-silico-ML
-Personalizing In Silico Cardiac Models using ML
-
-** write-up: https://www.overleaf.com/project/63d210d4ebe2dadad43607f5
+# Non-Invasive Medical Digital Twins using Physics-Informed Self-Supervised Learning
 
 Example for a lumped parameter model: 
 
