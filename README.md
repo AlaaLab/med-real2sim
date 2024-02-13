@@ -1,53 +1,58 @@
 # Non-Invasive Medical Digital Twins using Physics-Informed Self-Supervised Learning
 
-Example for a lumped parameter model: 
+**Overview**: A digital twin is a virtual replica of a real-world physical phenomena that uses mathematical modeling to characterize and simulate its defining features. By constructing digital twins for disease processes, we can perform in-silico simulations that mimic patients' health conditions and counterfactual outcomes under hypothetical interventions in a virtual setting. This eliminates the need for invasive procedures or uncertain treatment decisions. In this paper, we propose a method to identify digital twin model parameters using only noninvasive patient health data. We approach the digital twin modeling as a {\it composite inverse problem}, and observe that its structure resembles pretraining and finetuning in self-supervised learning (SSL). Leveraging this, we introduce a {\it physics-informed SSL} algorithm that initially pretrains a neural network on the pretext task of solving the physical model equations. Subsequently, the model is trained to reconstruct low-dimensional health measurements from noninvasive modalities while being constrained by the physical equations learned in pretraining. We apply our method to identify digital twins of cardiac hemodynamics using noninvasive echocardiogram videos, and demonstrate its utility in unsupervised disease detection and in-silico clinical trials.
 
-**Afte exams**: (1) start adding code to this for the RC circuit parameter estimation, (2) create an overleaf to document the experimental setup and model architecture. https://www.overleaf.com/project/6392c0903d57713aeb7576b7
+## Set up the environment
 
-**Task** Open NeurIPS 2022 proceedings, pick a paper on NeuralODEs and read to learn about writing style and paper structure
+To ensure compatibility, you can install specific versions of the dependencies by running the following commands:
+
+```shell
+pip install matplotlib==3.7.1
+pip install torch==2.1.0+cu121
+pip install scikit-image==0.19.3
+pip install numpy==1.25.2
+pip install scipy==1.11.4
+pip install pandas==1.5.3
+pip install torchvision==0.16.0+cu121
+```
+
+## Data
+The CAMUS data is available at [https://www.creatis.insa-lyon.fr/Challenge/camus/](https://www.creatis.insa-lyon.fr/Challenge/camus/)
+
+The EchoNet data is available at [https://echonet.github.io/dynamic/](https://echonet.github.io/dynamic/)
+
+## Pretrained Models
+
+<table>
+<thead>
+  <tr>
+    <th align="center"></th>
+    <th align="center" style="text-align:center" rowspan="2">Interpolators</th>
+    <th align="center" style="text-align:center" colspan="2">P-SSL 3DCNNs</th>
+  </tr>
+  <tr>
+    <th align="center"></th>
+    <th align="center" style="text-align:center">Echonet</th>
+    <th align="center" style="text-align:center">CAMUS</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td align="center">3-param</td>
+    <td align="center" rowspan="2"><a href="link_to_3_param_interpolator">Download</a></td>
+    <td align="center"><a href="link_to_3_param_echonet">Download</a></td>
+    <td align="center"><a href="link_to_3_param_camus">Download</a></td>
+  </tr>
+  <tr>
+    <td align="center">7-param</td>
+    <td align="center"><a href="link_to_7_param_echonet">Download</a></td>
+    <td align="center"><a href="link_to_7_param_camus">Download</a></td>
+  </tr>
+</tbody>
+</table>
+
+</table>
 
 
-(0) RC circuit: https://en.wikipedia.org/wiki/RC_circuit#:~:text=A%20resistor%E2%80%93capacitor%20circuit%20(RC,these%20will%20produce%20different%20responses.
-
-(1) https://models.cellml.org/e/43
-
-(2) https://github.com/xi2pi/SW_estimation
-
-(3) https://pubmed.ncbi.nlm.nih.gov/36140258/
-
-(4) https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5908824/
-
-(5) http://simvascular.github.io/
-
-(6) https://www.circadapt.org/
-
-(7) https://hal.inria.fr/tel-01658489/file/Thesis_english.pdf
-
-(8) https://ieeexplore.ieee.org/abstract/document/7024160
-
-(9) https://hal.archives-ouvertes.fr/hal-01796483/file/FINAL_VERSION_CORR.pdf
-
-(10) https://github.com/CardiacModelling
-
-(11) https://www.youtube.com/watch?v=iB4OQUMuu-A&ab_channel=UCLMedicalPhysicsandBiomedicalEngineering
-
-(12) https://github.com/rtqichen/torchdiffeq
-
-(13) https://arxiv.org/pdf/2208.12156.pdf
-
-(14) https://papers.nips.cc/paper/2021/hash/5ea1649a31336092c05438df996a3e59-Abstract.html 
-
-(15) https://proceedings.neurips.cc/paper/2021/file/df438e5206f31600e6ae4af72f2725f1-Paper.pdf
-
-(16) https://www.nature.com/articles/s41569-018-0104-y
-
-Microsoft package for PDEs: https://microsoft.github.io/pdearena/
-
-Microsoft 4D Flow MRI: 
-
-https://appliedmldays.org/events/amld-epfl-2022/talks/generation-of-a-large-synthetic-dataset-for-learning-physics-based-optimal-inference-of-4d-flow-mri
-https://www.microsoft.com/en-us/research/video/generation-of-a-large-synthetic-dataset-for-learning-physics-based-optimal-inference-of-4d-flow-mri/
-
-Neural ODEs: https://voletiv.github.io/docs/presentations/20200710_Mila_Neural_ODEs_tutorial_Vikram_Voleti.pdf
-
-Basics of electrics circuits: https://www.youtube.com/watch?v=uXr4lXYjXuU&ab_channel=TheOrganicChemistryTutor
+## Demo
+A simulation of the pressure-volume loops with artificial volume oscillations can be found here: https://www.desmos.com/calculator/dgfbaot4zf
