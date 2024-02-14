@@ -21,7 +21,7 @@ The CAMUS data is available at [https://www.creatis.insa-lyon.fr/Challenge/camus
 
 The EchoNet data is available at [https://echonet.github.io/dynamic/](https://echonet.github.io/dynamic/)
 
-## Pretrained Models
+## Model Training Directory
 
 <table>
 <thead>
@@ -39,19 +39,20 @@ The EchoNet data is available at [https://echonet.github.io/dynamic/](https://ec
 <tbody>
   <tr>
     <td align="center">3-param</td>
-    <td align="center" rowspan="2"><a href="link_to_3_param_interpolator">Download</a></td>
-    <td align="center"><a href="link_to_3_param_echonet">Download</a></td>
-    <td align="center"><a href="link_to_3_param_camus">Download</a></td>
+    <td align="center" rowspan="1"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/interpolator_3param.py">View Code</a></td>
+    <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_3param_echonet.py">View Code</a></td>
+    <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_3param_camus.py">View Code</a></td>
   </tr>
   <tr>
     <td align="center">7-param</td>
-    <td align="center"><a href="link_to_7_param_echonet">Download</a></td>
-    <td align="center"><a href="link_to_7_param_camus">Download</a></td>
+    <td align="center" rowspan="1"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/interpolator_7param.py">View Code</a></td>
+    <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_7param_echonet.py">View Code</a></td>
+    <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_7param_camus.py">View Code</a></td>
   </tr>
 </tbody>
 </table>
 
-</table>
+
 
 
 ## Demo
