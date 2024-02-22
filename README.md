@@ -25,13 +25,16 @@ The EchoNet data is available at [https://echonet.github.io/dynamic/](https://ec
 
 ### Interpolator training
 ```shell
-python training/interpolator_7param.py --output_path <output_directory_for_interpolators>
+python training/interpolator_7param.py --output_path /path/to/interpolator
+python training/interpolator_7param.py --output_path /path/to/interpolator
 ```
 ### Model training with EchoNet or CAMUS dataset
-**Step 1.** Download datasets and follow the instructions from the links provided in the **Data Section** and save to <echonet_input_directory> and <camus_input_directory>
-
+**Step 1.** Download datasets and follow the instructions from the links provided in the **Data Section** and save to /path/to/echonet_input and /path/to/camus_input
 **Step 2.** Run training scripts for both datasets
 ```shell
+python training/pssl_7param_echonet.py --output_path /path/to/output --batch_size 100 --interpolator_path /path/to/interpolator --num_epochs 200 --learning_rate 0.001 --ID full_echonet_7param_Vloss --echonet_input_directory /path/to/echonet_input
+python training/pssl_7param_camus.py --output_path /path/to/output --batch_size 100 --interpolator_path /path/to/interpolator --num_epochs 200 --learning_rate 0.001 --ID full_camus_7param_Vloss --echonet_input_directory /path/to/camus_input
+
 ```
 
 <table>
