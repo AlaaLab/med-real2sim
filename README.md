@@ -39,6 +39,15 @@ python training/pssl_7param_camus.py --output_path /path/to/output --batch_size 
 
 ```
 
+### Use cases
+**Step 1.** Create parameter datasets 
+```shell
+python eval/create_datasets/weight_to_param_echonet.py --output_path /path/to/output --ID create_dataset_echonet_7param --echonet_input_directory /path/to/echonet_input --model_path /path/to/model --interpolator_path /path/to/interpolator
+python eval/create_datasets/weight_to_param_camus.py --output_path /path/to/output --ID create_dataset_echonet_7param --echonet_input_directory /path/to/camus_input --model_path /path/to/model --interpolator_path /path/to/interpolator
+```
+**Step 2** Visualize PV loops for patients
+
+Some pretrained weights can be found here:
 <table>
 <thead>
   <tr>
@@ -55,15 +64,15 @@ python training/pssl_7param_camus.py --output_path /path/to/output --batch_size 
 <tbody>
   <tr>
     <td align="center">3-param</td>
-    <td align="center" rowspan="1"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/interpolator_3param.py">View Code</a></td>
-    <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_3param_echonet.py">View Code</a></td>
-    <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_3param_camus.py">View Code</a></td>
+    <td align="center" rowspan="1"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/interpolator_3param.py">Download</a></td>
+    <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_3param_echonet.py">Download</a></td>
+    <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_3param_camus.py">Download</a></td>
   </tr>
   <tr>
     <td align="center">7-param</td>
-    <td align="center" rowspan="1"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/interpolator_7param.py">View Code</a></td>
-    <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_7param_echonet.py">View Code</a></td>
-    <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_7param_camus.py">View Code</a></td>
+    <td align="center" rowspan="1"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/interpolator_7param.py">Download</a></td>
+    <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_7param_echonet.py">Download</a></td>
+    <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_7param_camus.py">Download</a></td>
   </tr>
 </tbody>
 </table>
