@@ -30,21 +30,15 @@ from torch.storage import T
 import argparse
 import time
 
-batch_size = 100
-# data_size = 450
-num_epochs = 500
-# val_size = 50
-learning_rate = 0.001
-ID = '301_full_echonet_morelabels'
-
-file = f"{ID}_epoch_{num_epochs}_lr_{learning_rate}"
-
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-sequences_all = []
-info_data_all = []
-path = '/scratch/users/keying_kuang/ML/echonet/EchoNet-Dynamic'
-output_path = '/accounts/biost/grad/keying_kuang/ML/echonet/interpolator_RaRm_10'
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='code to create 7 parameter datasets')
+    parser.add_argument('--output_path', type=str, default='', help='Output path for saving files')
+    parser.add_argument('--ID', type=str, default='create_dataset_echonet_7param', help='Identifier for the experiment')
+    parser.add_argument('--echonet_input_directory', type=str, default='', help='Input directory for Echonet dataset')
+    parser.add_argument('--model_path', type=str, default='', help='Input directory for trained pssl on EchoNet')
+    parser.add_argument('--interpolator_path', type=str, default='', help='Input directory for trained 7 param interpolator')
+    args = parser.parse_args()
+    return args
 
 class Echo(torchvision.datasets.VisionDataset):
     """EchoNet-Dynamic Dataset.
@@ -104,8 +98,8 @@ class Echo(torchvision.datasets.VisionDataset):
                  noise=None,
                  target_transform=None,
                  external_test_location=None):
-        if root is None:
-            root = path
+        # if root is None:
+        #     root = path
 
         super().__init__(root, target_transform=target_transform)
 
@@ -317,8 +311,6 @@ def _defaultdict_of_lists():
 
     return collections.defaultdict(list)
 
-
-
 class IntervalNormalizationLayer(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -367,48 +359,7 @@ class NEW3DCNN(nn.Module):
         x = self.norm1(x)
 
         return x
-class NEW3DCNN(nn.Module):
-    def __init__(self, num_parameters):
-        super(NEW3DCNN, self).__init__()
-        
-        self.conv1 = nn.Conv3d(3, 8, kernel_size=3, padding=1)
-        self.batchnorm1 = nn.BatchNorm3d(8)
-        self.conv2 = nn.Conv3d(8, 16, kernel_size=3, padding=1)
-        self.batchnorm2 = nn.BatchNorm3d(16)
-        self.conv3 = nn.Conv3d(16, 32, kernel_size=3, padding=1)
-        self.batchnorm3 = nn.BatchNorm3d(32)
-        self.conv4 = nn.Conv3d(32, 64, kernel_size=3, padding=1)
-        self.batchnorm4 = nn.BatchNorm3d(64)
-        self.conv5 = nn.Conv3d(64, 128, kernel_size=3, padding=1)
-        self.batchnorm5 = nn.BatchNorm3d(128)
-        self.pool = nn.AdaptiveAvgPool3d(1)
-        self.fc1 = nn.Linear(128, 512)
-        self.fc2 = nn.Linear(512, num_parameters)
-        self.norm1 = IntervalNormalizationLayer()
-        
-    def forward(self, x):
-        x = F.relu(self.batchnorm1(self.conv1(x)))
-        # print("Input size:", x.size())
-        x = F.max_pool3d(x, kernel_size=(1, 2, 2), stride=(1, 2, 2))
-        x = F.relu(self.batchnorm2(self.conv2(x)))
-        # print("Input size:", x.size())
-        x = F.max_pool3d(x, kernel_size=(1, 2, 2), stride=(1, 2, 2))
-        x = F.relu(self.batchnorm3(self.conv3(x)))
-        # print("Input size:", x.size())
-        x = F.max_pool3d(x, kernel_size=(1, 2, 2), stride=(1, 2, 2))
-        x = F.relu(self.batchnorm4(self.conv4(x)))
-        x = F.max_pool3d(x, kernel_size=(1, 2, 2), stride=(1, 2, 2))
-        # print("Input size:", x.size())
-        x = F.relu(self.batchnorm5(self.conv5(x)))
-        x = self.pool(x)
-        x = x.view(x.size(0), -1)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
-        x = self.norm1(x)
 
-        return x
-
-# Define a neural network with one hidden layer
 class Interpolator(nn.Module):
     def __init__(self):
         super().__init__()
@@ -420,51 +371,66 @@ class Interpolator(nn.Module):
         x = self.fc2(x)
         return x
 
-# Initialize the neural network
-net = Interpolator()
-net.load_state_dict(torch.load('/accounts/biost/grad/keying_kuang/ML/interpolator6/interp6_7param_weight.pt'))
+def main():
+    # Parse command-line arguments
+    args = parse_arguments()
+    
+    # Accessing parsed arguments
+    output_path = args.output_path
+    model_path = args.model_path
+    interpolator_path = args.interpolator_path
+    ID = args.ID
+    echonet_input_directory = args.echonet_input_directory
+    path = echonet_input_directory
 
-model = NEW3DCNN(num_parameters = 7)
-model.to(device)
-model.load_state_dict(torch.load('/accounts/biost/grad/keying_kuang/ML/interpolator_RaRm_10/301_full_echonet_morelabels_epoch_200_lr_0.001_weight_best_model.pt'))
-print('Done loading model weight')
-# Define the loss function and optimizer
+    file = f"{ID}"
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    net = Interpolator()
+    net.load_state_dict(torch.load(interpolator_path))
+    print("Done loading interpolator!")
+    model = NEW3DCNN(num_parameters = 7)
+    model.to(device)
+    model.load_state_dict(torch.load(model_path))
+    print('Done loading model weight')
+    # Define the loss function and optimizer
 
 
-# Create the data loader
-full_dataset = Echo(root = path, split = 'all', target_type=['EF', 'EDV', 'ESV', 'Filename'])
-full_loader = DataLoader(full_dataset, batch_size=len(full_dataset), shuffle=True)
-print("Done loading full data!")
-print(len(full_dataset))
-full_iter = next(iter(full_loader))
+    # Create the data loader
+    full_dataset = Echo(root = path, split = 'all', target_type=['EF', 'EDV', 'ESV', 'Filename'])
+    full_loader = DataLoader(full_dataset, batch_size=len(full_dataset), shuffle=True)
+    print("Done loading full data!")
+    print(len(full_dataset))
+    full_iter = next(iter(full_loader))
 
-full_seq = full_iter[0]
-full_tensor = torch.tensor(full_seq, dtype=torch.float32) 
+    full_seq = full_iter[0]
+    full_tensor = torch.tensor(full_seq, dtype=torch.float32) 
 
-full_EF = full_iter[1][0]
-full_id = full_iter[1][3]
+    full_EF = full_iter[1][0]
+    full_id = full_iter[1][3]
 
-print("Done creating full tensor!")
+    print("Done creating full tensor!")
 
-full_x = model(full_tensor).double()
-full_x1 = full_x[:, :6]
-full_Vd = full_x[:, -1:]
-full_output1 = net(full_x1)
-full_output = full_output1 + full_Vd - 4
-a, b = torch.split(full_output, split_size_or_sections=1, dim=1)
-full_sim_EF = (a - b) / a * 100
-full_EF_np = full_EF.numpy()
-full_sim_EF_np = full_sim_EF.detach().numpy()
+    full_x = model(full_tensor).double()
+    full_x1 = full_x[:, :6]
+    full_Vd = full_x[:, -1:]
+    full_output1 = net(full_x1)
+    full_output = full_output1 + full_Vd - 4
+    a, b = torch.split(full_output, split_size_or_sections=1, dim=1)
+    full_sim_EF = (a - b) / a * 100
+    full_EF_np = full_EF.numpy()
+    full_sim_EF_np = full_sim_EF.detach().numpy()
 
-MAE = np.mean(np.abs(full_EF_np - full_sim_EF_np.flatten()))
-file_label = f"MAE:{MAE:.2f}"
-print(file_label)
-combined = torch.cat((full_sim_EF, full_EF.unsqueeze(1), full_x), dim=1)
-np_array = combined.detach().numpy()
-np.savetxt(f'{output_path}/EchoNet_{file}_{file_label}_parameters.csv', np_array, delimiter=',', header='id, sim_EF, trueEF, Tc, start_p, Emax, Emin, Rm, Ra, Vd')
+    MAE = np.mean(np.abs(full_EF_np - full_sim_EF_np.flatten()))
+    file_label = f"MAE:{MAE:.2f}"
+    print(file_label)
+    combined = torch.cat((full_sim_EF, full_EF.unsqueeze(1), full_x), dim=1)
+    np_array = combined.detach().numpy()
+    np.savetxt(f'{output_path}/EchoNet_{file}_{file_label}_parameters.csv', np_array, delimiter=',', header='id, sim_EF, trueEF, Tc, start_p, Emax, Emin, Rm, Ra, Vd')
 
-full_id_array = np.array(full_id)
-# Save the NumPy array to a file
-np.savetxt(f'{output_path}/EchoNet_{file}_{file_label}_ids.csv', full_id_array, fmt='%s')
-print("NumPy array saved successfully.")
+    full_id_array = np.array(full_id)
+    # Save the NumPy array to a file
+    np.savetxt(f'{output_path}/EchoNet_{file}_{file_label}_ids.csv', full_id_array, fmt='%s')
+    print("Finished")
 
+if __name__ == "__main__":
+    main()
