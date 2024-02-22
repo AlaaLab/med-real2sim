@@ -17,7 +17,7 @@ pip install torchvision==0.16.0+cu121
 ```
 
 ## Data
-The CAMUS data is available at [https://www.creatis.insa-lyon.fr/Challenge/camus/](https://www.creatis.insa-lyon.fr/Challenge/camus/)
+The preprocessed CAMUS data in two-chamber and four-chamber views can be downloaded at [2CH](https://drive.google.com/drive/folders/1bN9qUvPrajReSZPDskFT8N8cag6mpRaJ?usp=drive_link) and [4CH](https://drive.google.com/drive/folders/14NMaOJ-NfwO5qHPcOTarCMBLvJWJ1Rs0?usp=drive_link)
 
 The EchoNet data is available at [https://echonet.github.io/dynamic/](https://echonet.github.io/dynamic/)
 
