@@ -21,7 +21,18 @@ The CAMUS data is available at [https://www.creatis.insa-lyon.fr/Challenge/camus
 
 The EchoNet data is available at [https://echonet.github.io/dynamic/](https://echonet.github.io/dynamic/)
 
-## Model Training Directory
+## Model Training and Inference Instructions
+
+### Interpolator training
+```shell
+python training/interpolator_7param.py --output_path <output_directory_for_interpolators>
+```
+### Model training with EchoNet or CAMUS dataset
+**Step 1.** Download datasets and follow the instructions from the links provided in the **Data Section** and save to <echonet_input_directory> and <camus_input_directory>
+
+**Step 2.** Run training scripts for both datasets
+```shell
+```
 
 <table>
 <thead>
