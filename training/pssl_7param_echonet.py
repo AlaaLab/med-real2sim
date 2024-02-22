@@ -30,21 +30,20 @@ from torch.storage import T
 import argparse
 import time
 
-batch_size = 100
-# data_size = 450
-num_epochs = 200
-# val_size = 50
-learning_rate = 0.001
-ID = '201_full_echonet_7param_EFloss'
 
-file = f"{ID}_epoch_{num_epochs}_lr_{learning_rate}"
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-sequences_all = []
-info_data_all = []
-path = '/scratch/users/keying_kuang/ML/echonet/EchoNet-Dynamic'
-output_path = '/accounts/biost/grad/keying_kuang/ML/echonet/interpolator6'
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='pssl with 7 param training code')
+    parser.add_argument('--output_path', type=str, default='', help='Output path for saving files')
+    parser.add_argument('--batch_size', type=int, default=100, help='Batch size for training')
+    parser.add_argument('--interpolator_path', type=str, default='', help='Input path for Interpolator weight')
+    parser.add_argument('--num_epochs', type=int, default=200, help='Number of epochs for training')
+    # parser.add_argument('--val_size', type=int, default=50, help='Size of validation set')
+    parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate for training')
+    parser.add_argument('--ID', type=str, default='full_echonet_7param_Vloss', help='Identifier for the experiment')
+    parser.add_argument('--echonet_input_directory', type=str, default='', help='Input directory for Echonet dataset')
+    args = parser.parse_args()
+    return args
 
 class Echo(torchvision.datasets.VisionDataset):
     """EchoNet-Dynamic Dataset.
@@ -104,8 +103,8 @@ class Echo(torchvision.datasets.VisionDataset):
                  noise=None,
                  target_transform=None,
                  external_test_location=None):
-        if root is None:
-            root = path
+        # if root is None:
+        #     root = path
 
         super().__init__(root, target_transform=target_transform)
 
@@ -383,115 +382,136 @@ class Interpolator(nn.Module):
         x = torch.relu(self.fc1(x))
         x = self.fc2(x)
         return x
-
-# Initialize the neural network
-net = Interpolator()
-net.load_state_dict(torch.load('/accounts/biost/grad/keying_kuang/ML/interpolator6/interp6_7param_weight.pt'))
-print("Done loading interpolator!")
-
-model = NEW3DCNN(num_parameters = 7)
-model.to(device)
-# model.load_state_dict(torch.load('/accounts/biost/grad/keying_kuang/ML/interpolator2/001_weight_model_NNinterp2_allloss.pt'))
-
-# Define the loss function and optimizer
-criterion = torch.nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-
-# Create the data loader
-train_data = Echo(root = path, split = 'train', target_type=['EF', 'EDV', 'ESV'])
-train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
-print("Done creating dataloaders ")
-
-# loading validation set
-validation_data = Echo(root = path, split = 'val', target_type=['EF', 'EDV', 'ESV'])
-val_loader = DataLoader(validation_data, batch_size=len(validation_data), shuffle=True)
-print(len(validation_data))
-
-test_data = Echo(root = path, split = 'test', target_type=['EF', 'EDV', 'ESV'])
-test_loader = DataLoader(test_data, batch_size=len(test_data), shuffle=True)
-print(len(test_data))
-test_iter = next(iter(test_loader))
-test_seq = test_iter[0]
-test_tensor = torch.tensor(test_seq, dtype=torch.float32) 
-
-test_EF = test_iter[1][0]
-
-val_data = next(iter(val_loader))
-val_seq = val_data[0]
-val_tensor = torch.tensor(val_seq, dtype=torch.float32) 
-
-val_EF = val_data[1][0]
-
-print("Done loading validation set!")
-
-
-
-# Training
-num_epochs = num_epochs
-best_mae = float('inf')
-patience = 7
-#lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=patience, verbose=True)
-for epoch in range(num_epochs):
-    epoch_loss = 0.0
-    for j, batch in enumerate(train_loader):
-        optimizer.zero_grad()
-        seq = batch[0]
-        input_tensor = seq.to(torch.float32)
-
-        #simulated values: sim_output = (V_ED, V_ES)
-        x = model(input_tensor).double()
-        x1 = x[:, :6]
-        Vd = x[:, -1:]
-        output1 = net(x1)
-        output = output1 + Vd-4
-        ved, ves= torch.split(output, split_size_or_sections=1, dim=1)
-        ef = (ved-ves)/ved*100
-
-        trueV_ED = batch[1][1].double()
-        trueV_ES = batch[1][2].double()
-        true_EF = batch[1][0].double()
-        #criterion = torch.nn.MSELoss()
-        #loss = criterion(ved.flatten(), trueV_ED) + criterion(ves.flatten(), trueV_ES)
-        #loss = criterion(ved, trueV_ED) + criterion(ves, trueV_ES) + criterion(ef, true_EF)
-        loss = criterion(ef.flatten(), true_EF)
-        # Compute the gradients and update the model parameters using backpropagation
-        loss.backward()
-        optimizer.step()
-
-        epoch_loss += loss.item()
-    epoch_loss /= len(train_loader)
-    with torch.no_grad():
-        val_x = model(val_tensor).double()
-        val_x1 = val_x[:, :6]
-        val_Vd = val_x[:, -1:]
-        val_output1 = net(val_x1)
-        val_output = val_output1 + val_Vd -4
-        a, b = torch.split(val_output, split_size_or_sections=1, dim=1)
-        val_sim_EF = (a-b)/a*100
-    val_EF_np = val_EF.numpy()
-    val_sim_EF_np = val_sim_EF.detach().numpy()
-    MAE = np.mean(np.abs(val_EF_np - val_sim_EF_np.flatten()))
-    #lr_scheduler.step(MAE)
-    print("Epoch [{}/{}], Loss: {:.4f}, valid MAE: {:.4f}".format(epoch+1, num_epochs, epoch_loss, MAE))
-    if MAE < best_mae:
-        best_mae = MAE
-        file_label = f"epoch:{epoch+1} MAE:{MAE:.2f}"
-        print(file_label)
-        test_x = model(test_tensor).double()
-        test_x1 = test_x[:, :6]
-        test_Vd = test_x[:, -1:]
-        test_output1 = net(test_x1)
-        test_output = test_output1 + test_Vd -4
-        a, b = torch.split(test_output, split_size_or_sections=1, dim=1)
-        test_sim_EF = (a-b)/a*100
-        test_EF_np = test_EF.numpy()
-        test_sim_EF_np = test_sim_EF.detach().numpy()
-
-        combined = torch.cat((test_sim_EF, test_EF.unsqueeze(1), test_x), dim=1)
-        np_array = combined.detach().numpy()
-        np.savetxt(f'{output_path}/{file}_best_model.csv', np_array, delimiter=',', header='sim_EF,trueEF, Tc, start_v, start_p, Emax, Emin, Rs, Cs, Vd')
-        torch.save(model.state_dict(), f'{output_path}/{file}_weight_best_model.pt')
+def main():
+    # Parse command-line arguments
+    args = parse_arguments()
     
+    # Accessing parsed arguments
+    output_path = args.output_path
+    batch_size = args.batch_size
+    num_epochs = args.num_epochs
+    learning_rate = args.learning_rate
+    interpolator_path = args.interpolator_path
+    ID = args.ID
+    echonet_input_directory = args.echonet_input_directory
 
-torch.save(model.state_dict(), os.path.join(output_path,f'{file}_end_weight.py'))
+    path = echonet_input_directory
 
+    file = f"{ID}_epoch_{num_epochs}_lr_{learning_rate}"
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    sequences_all = []
+    info_data_all = []
+
+    # Initialize the neural network
+    net = Interpolator()
+    net.load_state_dict(torch.load(interpolator_path))
+    print("Done loading interpolator!")
+
+    model = NEW3DCNN(num_parameters = 7)
+    model.to(device)
+
+    # Define the loss function and optimizer
+    criterion = torch.nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+
+    # Create the data loader
+    train_data = Echo(root = path, split = 'train', target_type=['EF', 'EDV', 'ESV'])
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+    print("Done creating dataloaders ")
+
+    # loading validation set
+    validation_data = Echo(root = path, split = 'val', target_type=['EF', 'EDV', 'ESV'])
+    val_loader = DataLoader(validation_data, batch_size=len(validation_data), shuffle=True)
+    print(len(validation_data))
+
+    test_data = Echo(root = path, split = 'test', target_type=['EF', 'EDV', 'ESV'])
+    test_loader = DataLoader(test_data, batch_size=len(test_data), shuffle=True)
+    print(len(test_data))
+    test_iter = next(iter(test_loader))
+    test_seq = test_iter[0]
+    test_tensor = torch.tensor(test_seq, dtype=torch.float32) 
+
+    test_EF = test_iter[1][0]
+
+    val_data = next(iter(val_loader))
+    val_seq = val_data[0]
+    val_tensor = torch.tensor(val_seq, dtype=torch.float32) 
+
+    val_EF = val_data[1][0]
+
+    print("Done loading validation set!")
+
+
+
+    # Training
+    num_epochs = num_epochs
+    best_mae = float('inf')
+    patience = 7
+    #lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=patience, verbose=True)
+    for epoch in range(num_epochs):
+        epoch_loss = 0.0
+        for j, batch in enumerate(train_loader):
+            optimizer.zero_grad()
+            seq = batch[0]
+            input_tensor = seq.to(torch.float32)
+
+            #simulated values: sim_output = (V_ED, V_ES)
+            x = model(input_tensor).double()
+            x1 = x[:, :6]
+            Vd = x[:, -1:]
+            output1 = net(x1)
+            output = output1 + Vd-4
+            ved, ves= torch.split(output, split_size_or_sections=1, dim=1)
+            ef = (ved-ves)/ved*100
+
+            trueV_ED = batch[1][1].double()
+            trueV_ES = batch[1][2].double()
+            true_EF = batch[1][0].double()
+            #criterion = torch.nn.MSELoss()
+            #loss = criterion(ved.flatten(), trueV_ED) + criterion(ves.flatten(), trueV_ES)
+            #loss = criterion(ved, trueV_ED) + criterion(ves, trueV_ES) + criterion(ef, true_EF)
+            loss = criterion(ef.flatten(), true_EF)
+            # Compute the gradients and update the model parameters using backpropagation
+            loss.backward()
+            optimizer.step()
+
+            epoch_loss += loss.item()
+        epoch_loss /= len(train_loader)
+        with torch.no_grad():
+            val_x = model(val_tensor).double()
+            val_x1 = val_x[:, :6]
+            val_Vd = val_x[:, -1:]
+            val_output1 = net(val_x1)
+            val_output = val_output1 + val_Vd -4
+            a, b = torch.split(val_output, split_size_or_sections=1, dim=1)
+            val_sim_EF = (a-b)/a*100
+        val_EF_np = val_EF.numpy()
+        val_sim_EF_np = val_sim_EF.detach().numpy()
+        MAE = np.mean(np.abs(val_EF_np - val_sim_EF_np.flatten()))
+        #lr_scheduler.step(MAE)
+        print("Epoch [{}/{}], Loss: {:.4f}, valid MAE: {:.4f}".format(epoch+1, num_epochs, epoch_loss, MAE))
+        if MAE < best_mae:
+            best_mae = MAE
+            file_label = f"epoch:{epoch+1} MAE:{MAE:.2f}"
+            print(file_label)
+            test_x = model(test_tensor).double()
+            test_x1 = test_x[:, :6]
+            test_Vd = test_x[:, -1:]
+            test_output1 = net(test_x1)
+            test_output = test_output1 + test_Vd -4
+            a, b = torch.split(test_output, split_size_or_sections=1, dim=1)
+            test_sim_EF = (a-b)/a*100
+            test_EF_np = test_EF.numpy()
+            test_sim_EF_np = test_sim_EF.detach().numpy()
+
+            combined = torch.cat((test_sim_EF, test_EF.unsqueeze(1), test_x), dim=1)
+            np_array = combined.detach().numpy()
+            np.savetxt(f'{output_path}/{file}_best_model.csv', np_array, delimiter=',', header='sim_EF,trueEF, Tc, start_v, start_p, Emax, Emin, Rs, Cs, Vd')
+            torch.save(model.state_dict(), f'{output_path}/{file}_weight_best_model.pt')
+        
+
+    torch.save(model.state_dict(), os.path.join(output_path,f'{file}_end_weight.py'))
+
+
+if __name__ == "__main__":
+    main()

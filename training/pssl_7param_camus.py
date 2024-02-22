@@ -25,40 +25,20 @@ from torch.storage import T
 import argparse
 import time
 
-batch_size = 50
-data_size = 450
-num_epochs = 500
-learning_rate = 0.001
-ID = '204_CAMUS_7param_Vloss_4CH'
 
-file = f"{ID}_epoch_{num_epochs}_lr_{learning_rate}"
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='pssl with 7 param training code')
+    parser.add_argument('--output_path', type=str, default='', help='Output path for saving files')
+    parser.add_argument('--batch_size', type=int, default=100, help='Batch size for training')
+    parser.add_argument('--interpolator_path', type=str, default='', help='Input path for Interpolator weight')
+    parser.add_argument('--num_epochs', type=int, default=200, help='Number of epochs for training')
+    # parser.add_argument('--val_size', type=int, default=50, help='Size of validation set')
+    parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate for training')
+    parser.add_argument('--ID', type=str, default='CAMUS_7param_Vloss', help='Identifier for the experiment')
+    parser.add_argument('--camus_input_directory', type=str, default='', help='Input directory for CAMUS dataset')
+    args = parser.parse_args()
+    return args
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-sequences_all = []
-info_data_all = []
-path = '/accounts/biost/grad/keying_kuang/ML/data/4CH'
-output_path = '/accounts/biost/grad/keying_kuang/ML/interpolator6' 
-
-
-for i in range(1, 6):
-    sequences_batch = np.load(f'{path}/sequences_{i}.npy', allow_pickle=True)
-    info_data_batch = pd.read_csv(f'{path}/info_data_{i}.csv')
-    
-    sequences_all.append(sequences_batch)
-    info_data_all.append(info_data_batch)
-    
-# Concatenate the sequence arrays into a single array
-sequences_all = np.concatenate(sequences_all, axis=0)
-
-# Concatenate the info_data DataFrames into a single DataFrame
-info_data_all = pd.concat(info_data_all, axis=0, ignore_index=True)
-
-patient_id = torch.tensor(range(data_size), device=device)
-LVedv = torch.tensor(info_data_all['LVedv'].values, device=device)
-LVesv = torch.tensor(info_data_all['LVesv'].values, device=device)
-LVef = torch.tensor(info_data_all['LVef'].values, device=device)
-sequences_all = torch.tensor(sequences_all, device=device)
 
 class CardioDataset(torch.utils.data.Dataset):
     def __init__(self, patient_ids, sequences, edvs, esvs, efs):
@@ -86,11 +66,6 @@ class CardioDataset(torch.utils.data.Dataset):
         }
         return data
 
-train_data = CardioDataset(patient_ids=patient_id, sequences = sequences_all, edvs = LVedv, esvs= LVesv, efs = LVef)
-
-print("Done loading training data!")
-# define normalization layer to make sure output xi in an interval [ai, bi]:
-# define normalization layer to make sure output xi in an interval [ai, bi]:
 class IntervalNormalizationLayer(torch.nn.Module):
     def __init__(self):
         super().__init__()
@@ -154,128 +129,179 @@ class Interpolator(nn.Module):
         x = self.fc2(x)
         return x
 
-# Initialize the neural network
-net = Interpolator()
-net.load_state_dict(torch.load('/accounts/biost/grad/keying_kuang/ML/interpolator6/interp6_7param_weight.pt'))
-print("Done loading interpolator!")
-
-model = NEW3DCNN(num_parameters = 7)
-model.to(device)
-# model.load_state_dict(torch.load('/accounts/biost/grad/keying_kuang/ML/interpolator2/001_weight_model_NNinterp2_allloss.pt'))
-
-# Define the loss function and optimizer
-criterion = torch.nn.MSELoss()
-optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-
-# Create the data loader
-
-train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
-
-
-
-# loading validation set
-sequences_all = []
-info_data_all = []
-sequences_batch = np.load(f'{path}/test/sequences_test.npy', allow_pickle=True)
-info_data_batch = pd.read_csv(f'{path}/test/info_data_test.csv')
-
-sequences_all.append(sequences_batch)
-info_data_all.append(info_data_batch)
+def main():
+    # Parse command-line arguments
+    args = parse_arguments()
     
-# Concatenate the sequence arrays into a single array
-sequences_all = np.concatenate(sequences_all, axis=0)
+    # Accessing parsed arguments
+    output_path = args.output_path
+    batch_size = args.batch_size
+    num_epochs = args.num_epochs
+    learning_rate = args.learning_rate
+    interpolator_path = args.interpolator_path
+    ID = args.ID
+    camus_input_directory = args.echonet_input_directory
 
-# Concatenate the info_data DataFrames into a single DataFrame
-info_data_all = pd.concat(info_data_all, axis=0, ignore_index=True)
+    path = camus_input_directory
+    file = f"{ID}_epoch_{num_epochs}_lr_{learning_rate}"
 
-patient_id = torch.tensor(range(50), device=device)
-LVedv = torch.tensor(info_data_all['LVedv'].values, device=device)
-LVesv = torch.tensor(info_data_all['LVesv'].values, device=device)
-LVef = torch.tensor(info_data_all['LVef'].values, device=device)
-sequences_all = torch.tensor(sequences_all, device=device)
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-testing_data = CardioDataset(patient_ids=patient_id, sequences = sequences_all, edvs = LVedv, esvs= LVesv, efs = LVef)
-test_loader = DataLoader(testing_data, batch_size=batch_size, shuffle=True)
+    sequences_all = []
+    info_data_all = []
 
-test_data = next(iter(test_loader))
-test_seq = test_data['4CH_sequence']
-test_seq = test_seq.reshape(batch_size, 1, 30, 112,112)
-test_tensor = torch.tensor(test_seq, dtype=torch.float32) 
+    for i in range(1, 6):
+        sequences_batch = np.load(f'{path}/sequences_{i}.npy', allow_pickle=True)
+        info_data_batch = pd.read_csv(f'{path}/info_data_{i}.csv')
+        
+        sequences_all.append(sequences_batch)
+        info_data_all.append(info_data_batch)
+        
+    # Concatenate the sequence arrays into a single array
+    sequences_all = np.concatenate(sequences_all, axis=0)
 
-test_EF = test_data['EF']
+    # Concatenate the info_data DataFrames into a single DataFrame
+    info_data_all = pd.concat(info_data_all, axis=0, ignore_index=True)
 
-print("Done loading validation set!")
+    data_size = 450
+    patient_id = torch.tensor(range(data_size), device=device)
+    LVedv = torch.tensor(info_data_all['LVedv'].values, device=device)
+    LVesv = torch.tensor(info_data_all['LVesv'].values, device=device)
+    LVef = torch.tensor(info_data_all['LVef'].values, device=device)
+    sequences_all = torch.tensor(sequences_all, device=device)
+
+
+    train_data = CardioDataset(patient_ids=patient_id, sequences = sequences_all, edvs = LVedv, esvs= LVesv, efs = LVef)
+
+    print("Done loading training data!")
+    # define normalization layer to make sure output xi in an interval [ai, bi]:
+    # define normalization layer to make sure output xi in an interval [ai, bi]:
+
+
+    # Initialize the neural network
+    net = Interpolator()
+    net.load_state_dict(torch.load(interpolator_path))
+    print("Done loading interpolator!")
+
+    model = NEW3DCNN(num_parameters = 7)
+    model.to(device)
+
+    # Define the loss function and optimizer
+    criterion = torch.nn.MSELoss()
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+
+    # Create the data loader
+
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
 
 
 
-# Training
-num_epochs = num_epochs
-best_mae = float('inf')
-patience = 7
-lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=patience, verbose=True)
-for epoch in range(num_epochs):
-    epoch_loss = 0.0
-    for j, batch in enumerate(train_loader):
-        optimizer.zero_grad()
-        seq = batch["4CH_sequence"]
-        seq = seq.reshape(batch_size, 1, 30, 112,112)
-        input_tensor = torch.tensor(seq, dtype=torch.float32) 
+    # loading validation set
+    sequences_all = []
+    info_data_all = []
+    sequences_batch = np.load(f'{path}/test/sequences_test.npy', allow_pickle=True)
+    info_data_batch = pd.read_csv(f'{path}/test/info_data_test.csv')
 
-        #simulated values: sim_output = (V_ED, V_ES)
-        x = model(input_tensor).double()
-        x1 = x[:, :6]
-        Vd = x[:, -1:]
-        output1 = net(x1)
-        output = output1 + Vd-4
-        ved, ves= torch.split(output, split_size_or_sections=1, dim=1)
-        ef = (ved-ves)/ved*100
+    sequences_all.append(sequences_batch)
+    info_data_all.append(info_data_batch)
+        
+    # Concatenate the sequence arrays into a single array
+    sequences_all = np.concatenate(sequences_all, axis=0)
 
-        trueV_ED = torch.tensor(batch['EDV'])
-        trueV_ES = torch.tensor(batch['ESV'])
-        true_EF = torch.tensor(batch['EF'])
-        #criterion = torch.nn.MSELoss()
-        loss = criterion(ved.flatten(), trueV_ED) + criterion(ves.flatten(), trueV_ES)
-        #loss = criterion(ved, trueV_ED) + criterion(ves, trueV_ES) + criterion(ef, true_EF)
-        #loss = criterion(ef.flatten(), true_EF)
-        # Compute the gradients and update the model parameters using backpropagation
-        loss.backward()
-        optimizer.step()
+    # Concatenate the info_data DataFrames into a single DataFrame
+    info_data_all = pd.concat(info_data_all, axis=0, ignore_index=True)
 
-        epoch_loss += loss.item()
-    epoch_loss /= len(train_loader)
-    with torch.no_grad():
-        test_x = model(test_tensor).double()
-        test_x1 = test_x[:, :6]
-        test_Vd = test_x[:, -1:]
-        test_output1 = net(test_x1)
-        test_output = test_output1 + test_Vd -4
-        a, b = torch.split(test_output, split_size_or_sections=1, dim=1)
-        #test_sim_EF = (a-b)/a*100
-        test_sim_EF = (a-b)/a*100
-    test_EF_np = test_EF.numpy()
-    test_sim_EF_np = test_sim_EF.detach().numpy()
-    MAE = np.mean(np.abs(test_EF_np - test_sim_EF_np.flatten()))
-    #lr_scheduler.step(MAE)
-    print("Epoch [{}/{}], Loss: {:.4f}, valid MAE: {:.4f}".format(epoch+1, num_epochs, epoch_loss, MAE))
-    if MAE < best_mae:
-        best_mae = MAE
-        file_label = f"epoch:{epoch+1} MAE:{MAE:.2f}"
-        print(file_label)
-        test_x = model(test_tensor).double()
-        test_x1 = test_x[:, :6]
-        test_Vd = test_x[:, -1:]
-        test_output1 = net(test_x1)
-        test_output = test_output1 + test_Vd -4
-        a, b = torch.split(test_output, split_size_or_sections=1, dim=1)
-        test_sim_EF = (a-b)/a*100
+    patient_id = torch.tensor(range(50), device=device)
+    LVedv = torch.tensor(info_data_all['LVedv'].values, device=device)
+    LVesv = torch.tensor(info_data_all['LVesv'].values, device=device)
+    LVef = torch.tensor(info_data_all['LVef'].values, device=device)
+    sequences_all = torch.tensor(sequences_all, device=device)
+
+    testing_data = CardioDataset(patient_ids=patient_id, sequences = sequences_all, edvs = LVedv, esvs= LVesv, efs = LVef)
+    test_loader = DataLoader(testing_data, batch_size=batch_size, shuffle=True)
+
+    test_data = next(iter(test_loader))
+    test_seq = test_data['4CH_sequence']
+    test_seq = test_seq.reshape(batch_size, 1, 30, 112,112)
+    test_tensor = torch.tensor(test_seq, dtype=torch.float32) 
+
+    test_EF = test_data['EF']
+
+    print("Done loading validation set!")
+
+
+
+    # Training
+    num_epochs = num_epochs
+    best_mae = float('inf')
+    patience = 7
+    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.3, patience=patience, verbose=True)
+    for epoch in range(num_epochs):
+        epoch_loss = 0.0
+        for j, batch in enumerate(train_loader):
+            optimizer.zero_grad()
+            seq = batch["4CH_sequence"]
+            seq = seq.reshape(batch_size, 1, 30, 112,112)
+            input_tensor = torch.tensor(seq, dtype=torch.float32) 
+
+            #simulated values: sim_output = (V_ED, V_ES)
+            x = model(input_tensor).double()
+            x1 = x[:, :6]
+            Vd = x[:, -1:]
+            output1 = net(x1)
+            output = output1 + Vd-4
+            ved, ves= torch.split(output, split_size_or_sections=1, dim=1)
+            ef = (ved-ves)/ved*100
+
+            trueV_ED = torch.tensor(batch['EDV'])
+            trueV_ES = torch.tensor(batch['ESV'])
+            true_EF = torch.tensor(batch['EF'])
+            #criterion = torch.nn.MSELoss()
+            loss = criterion(ved.flatten(), trueV_ED) + criterion(ves.flatten(), trueV_ES)
+            #loss = criterion(ved, trueV_ED) + criterion(ves, trueV_ES) + criterion(ef, true_EF)
+            #loss = criterion(ef.flatten(), true_EF)
+            # Compute the gradients and update the model parameters using backpropagation
+            loss.backward()
+            optimizer.step()
+
+            epoch_loss += loss.item()
+        epoch_loss /= len(train_loader)
+        with torch.no_grad():
+            test_x = model(test_tensor).double()
+            test_x1 = test_x[:, :6]
+            test_Vd = test_x[:, -1:]
+            test_output1 = net(test_x1)
+            test_output = test_output1 + test_Vd -4
+            a, b = torch.split(test_output, split_size_or_sections=1, dim=1)
+            #test_sim_EF = (a-b)/a*100
+            test_sim_EF = (a-b)/a*100
         test_EF_np = test_EF.numpy()
         test_sim_EF_np = test_sim_EF.detach().numpy()
+        MAE = np.mean(np.abs(test_EF_np - test_sim_EF_np.flatten()))
+        #lr_scheduler.step(MAE)
+        print("Epoch [{}/{}], Loss: {:.4f}, valid MAE: {:.4f}".format(epoch+1, num_epochs, epoch_loss, MAE))
+        if MAE < best_mae:
+            best_mae = MAE
+            file_label = f"epoch:{epoch+1} MAE:{MAE:.2f}"
+            print(file_label)
+            test_x = model(test_tensor).double()
+            test_x1 = test_x[:, :6]
+            test_Vd = test_x[:, -1:]
+            test_output1 = net(test_x1)
+            test_output = test_output1 + test_Vd -4
+            a, b = torch.split(test_output, split_size_or_sections=1, dim=1)
+            test_sim_EF = (a-b)/a*100
+            test_EF_np = test_EF.numpy()
+            test_sim_EF_np = test_sim_EF.detach().numpy()
 
-        combined = torch.cat((test_sim_EF, test_EF.unsqueeze(1), test_x), dim=1)
-        np_array = combined.detach().numpy()
-        np.savetxt(f'{output_path}/{file}_best_model.csv', np_array, delimiter=',', header='sim_EF,trueEF, Tc, start_v, Emax, Emin, Rm, Ra, Vd')
-        torch.save(model.state_dict(), f'{output_path}/{file}_weight_best_model.pt')
-    
+            combined = torch.cat((test_sim_EF, test_EF.unsqueeze(1), test_x), dim=1)
+            np_array = combined.detach().numpy()
+            np.savetxt(f'{output_path}/{file}_best_model.csv', np_array, delimiter=',', header='sim_EF,trueEF, Tc, start_v, Emax, Emin, Rm, Ra, Vd')
+            torch.save(model.state_dict(), f'{output_path}/{file}_weight_best_model.pt')
+        
 
-torch.save(model.state_dict(), os.path.join(output_path,f'{file}_end_weight.py'))
+    torch.save(model.state_dict(), os.path.join(output_path,f'{file}_end_weight.py'))
 
+
+if __name__ == "__main__":
+    main()
