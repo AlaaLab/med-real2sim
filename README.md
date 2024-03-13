@@ -23,27 +23,27 @@ The EchoNet data is available at [https://echonet.github.io/dynamic/](https://ec
 
 ## Model Training and Inference Instructions
 
-### Interpolator training
+### Physics-Informed Pretext Task
 ```shell
-python training/interpolator_7param.py --output_path /path/to/interpolator
-python training/interpolator_3param.py --output_path /path/to/interpolator
+python training/physics_pretext_7param.py --output_path /path/to/pretext_model
+python training/physics_pretext_3param.py --output_path /path/to/pretext_model
 ```
-### Model training with EchoNet or CAMUS dataset
+### Physics-Guided Fine-Tunin with EchoNet or CAMUS dataset
 **Step 1.** Download datasets and follow the instructions from the links provided in the **Data Section** and save to /path/to/echonet_input and /path/to/camus_input
 
 
 **Step 2.** Run training scripts for both datasets
 ```shell
-python training/pssl_7param_echonet.py --output_path /path/to/output --batch_size 100 --interpolator_path /path/to/interpolator --num_epochs 200 --learning_rate 0.001 --ID full_echonet_7param_Vloss --echonet_input_directory /path/to/echonet_input
-python training/pssl_7param_camus.py --output_path /path/to/output --batch_size 100 --interpolator_path /path/to/interpolator --num_epochs 200 --learning_rate 0.001 --ID full_camus_7param_Vloss --echonet_input_directory /path/to/camus_input
+python training/pssl_7param_echonet.py --output_path /path/to/output --batch_size 100 --pretext_model_path /path/to/pretext_model --num_epochs 200 --learning_rate 0.001 --ID full_echonet_7param_Vloss --echonet_input_directory /path/to/echonet_input
+python training/pssl_7param_camus.py --output_path /path/to/output --batch_size 100 --pretext_model_path /path/to/pretext_model --num_epochs 200 --learning_rate 0.001 --ID full_camus_7param_Vloss --echonet_input_directory /path/to/camus_input
 
 ```
 
 ### Use cases
 **Step 1.** Create parameter datasets 
 ```shell
-python eval/create_datasets/weight_to_param_echonet.py --output_path /path/to/output --ID create_dataset_echonet_7param --echonet_input_directory /path/to/echonet_input --model_path /path/to/model --interpolator_path /path/to/interpolator
-python eval/create_datasets/weight_to_param_camus.py --output_path /path/to/output --ID create_dataset_echonet_7param --echonet_input_directory /path/to/camus_input --model_path /path/to/model --interpolator_path /path/to/interpolator
+python eval/create_datasets/weight_to_param_echonet.py --output_path /path/to/output --ID create_dataset_echonet_7param --echonet_input_directory /path/to/echonet_input --model_path /path/to/model --pretext_model_path /path/to/pretext_model
+python eval/create_datasets/weight_to_param_camus.py --output_path /path/to/output --ID create_dataset_echonet_7param --echonet_input_directory /path/to/camus_input --model_path /path/to/model --pretext_model_path /path/to/pretext_model
 ```
 **Step 2** Visualize PV loops for patients
 
@@ -52,7 +52,7 @@ Some pretrained weights can be found here:
 <thead>
   <tr>
     <th align="center"></th>
-    <th align="center" style="text-align:center" rowspan="2">Interpolators</th>
+    <th align="center" style="text-align:center" rowspan="2">pretext_models</th>
     <th align="center" style="text-align:center" colspan="2">P-SSL 3DCNNs</th>
   </tr>
   <tr>
@@ -64,13 +64,13 @@ Some pretrained weights can be found here:
 <tbody>
   <tr>
     <td align="center">3-param</td>
-    <td align="center" rowspan="1"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/interpolator_3param.py">Download</a></td>
+    <td align="center" rowspan="1"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pretext_model_3param.py">Download</a></td>
     <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_3param_echonet.py">Download</a></td>
     <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_3param_camus.py">Download</a></td>
   </tr>
   <tr>
     <td align="center">7-param</td>
-    <td align="center" rowspan="1"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/interpolator_7param.py">Download</a></td>
+    <td align="center" rowspan="1"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pretext_model_7param.py">Download</a></td>
     <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_7param_echonet.py">Download</a></td>
     <td align="center"><a href="https://github.com/AlaaLab/Clinical-Sim2Real_exp/blob/master/training/pssl_7param_camus.py">Download</a></td>
   </tr>
