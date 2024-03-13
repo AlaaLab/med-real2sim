@@ -34,7 +34,7 @@ def parse_arguments():
     parser = argparse.ArgumentParser(description='pssl with 3 param training code')
     parser.add_argument('--output_path', type=str, default='', help='Output path for saving files')
     parser.add_argument('--batch_size', type=int, default=100, help='Batch size for training')
-    parser.add_argument('--interpolator_path', type=str, default='', help='Input path for Interpolator weight')
+    parser.add_argument('--pretext_model_path', type=str, default='', help='Input path for the pretext model weight')
     parser.add_argument('--num_epochs', type=int, default=200, help='Number of epochs for training')
     # parser.add_argument('--val_size', type=int, default=50, help='Size of validation set')
     parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate for training')
@@ -385,7 +385,7 @@ def main():
     batch_size = args.batch_size
     num_epochs = args.num_epochs
     learning_rate = args.learning_rate
-    interpolator_path = args.interpolator_path
+    pretext_model_path = args.pretext_model_path
     ID = args.ID
     echonet_input_directory = args.echonet_input_directory
 
@@ -400,8 +400,8 @@ def main():
 
     # Initialize the neural network
     net = Interpolator()
-    net.load_state_dict(torch.load(interpolator_path))
-    print("Done loading interpolator!")
+    net.load_state_dict(torch.load(pretext_model_path))
+    print("Done loading the pretext model!")
 
     model = NEW3DCNN(num_parameters = 3)
     model.to(device)
