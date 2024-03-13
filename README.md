@@ -52,7 +52,7 @@ Some pretrained weights can be found here:
 <thead>
   <tr>
     <th align="center"></th>
-    <th align="center" style="text-align:center" rowspan="2">pretext_models</th>
+    <th align="center" style="text-align:center" rowspan="2">pretext models</th>
     <th align="center" style="text-align:center" colspan="2">P-SSL 3DCNNs</th>
   </tr>
   <tr>
