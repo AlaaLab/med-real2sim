@@ -28,7 +28,7 @@ The EchoNet data is available at [https://echonet.github.io/dynamic/](https://ec
 python training/physics_pretext_7param.py --output_path /path/to/pretext_model
 python training/physics_pretext_3param.py --output_path /path/to/pretext_model
 ```
-### Physics-Guided Fine-Tunin with EchoNet or CAMUS dataset
+### Physics-Guided Fine-Tuning with EchoNet or CAMUS dataset
 **Step 1.** Download datasets and follow the instructions from the links provided in the **Data Section** and save to /path/to/echonet_input and /path/to/camus_input
 
 
