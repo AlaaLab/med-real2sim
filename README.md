@@ -81,4 +81,4 @@ Some pretrained weights can be found here:
 
 
 ## Demo
-A simulation of model inference and of the pressure-volume loops with artificial volume oscillations can be found here: https://huggingface.co/spaces/alaa-lab/Med-Real2Sim # https://www.desmos.com/calculator/dgfbaot4zf
+A simulation of model inference and of the pressure-volume loops with artificial volume oscillations can be found here: https://huggingface.co/spaces/alaa-lab/Med-Real2Sim 
